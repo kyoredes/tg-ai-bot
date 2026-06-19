@@ -1,17 +1,22 @@
-from clients.schemas import ClientModel
+from users.schemas import ClientModel
 
 
-async def get_profile_info_answer(client: ClientModel):
-    tg_id = client.tg_id
-    email = client.email
+async def get_profile_info_answer(client: ClientModel) -> str:
+    email_line = (
+        f"📧 *Email:* `{client.email}`"
+        if client.email
+        else "📧 *Email:* _не указан_"
+    )
 
-    answer = f"""
-    👤Ваш профиль
-    ```
-    Телеграм id: `{tg_id}`
-    ```
-    """
-    if email:
-        answer += f"\nEmail: `{email}`"
+    lines = [
+        "👤 *Ваш профиль*",
+        "━━━━━━━━━━━━━━━━",
+        f"🆔 *Telegram ID:* `{client.tg_id}`",
+    ]
 
-    return answer
+    if client.user_id:
+        lines.append(f"🔑 *User ID:* `{client.user_id}`")
+
+    lines.append(email_line)
+
+    return "\n".join(lines)

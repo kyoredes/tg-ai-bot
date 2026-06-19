@@ -1,7 +1,7 @@
 import httpx
 from config.core import settings
 import logging
-from users.schemas import UserModel
+from users.schemas import ClientModel, UserModel
 from contextlib import asynccontextmanager
 
 
@@ -52,4 +52,36 @@ class UserManager:
                 return UserModel(status=result["status"])
             except Exception as e:
                 logger.error("Error %s: %s", tg_id, e)
+                return None
+
+    async def get_profile(self, tg_id: str) -> ClientModel | None:
+        headers = await self._get_headers()
+        body = {
+            "telegramID": tg_id,
+        }
+        async with self._get_client() as client:
+            try:
+                response = await client.post(
+                    headers=headers,
+                    url=f"http://{self.backend_url}/telegram/profile",
+                    json=body,
+                )
+                if response.status_code != 200:
+                    logger.error(
+                        "Unable to get profile for client %s: status %s",
+                        tg_id,
+                        response.status_code,
+                    )
+                    return None
+                result = response.json()
+                if result.get("status") != "ok":
+                    return None
+                profile = result.get("profile") or {}
+                return ClientModel(
+                    tg_id=profile.get("telegramID", tg_id),
+                    user_id=profile.get("userID"),
+                    email=profile.get("email") or None,
+                )
+            except Exception as e:
+                logger.error("Error getting profile %s: %s", tg_id, e)
                 return None
