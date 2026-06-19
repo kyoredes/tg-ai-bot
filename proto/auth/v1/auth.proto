@@ -6,6 +6,7 @@ option go_package = "rageai/proto/gen/go/auth/v1;authv1";
 
 service AuthService {
   rpc StartTelegram(StartTelegramRequest) returns (StartTelegramResponse);
+  rpc GetTelegramProfile(GetTelegramProfileRequest) returns (GetTelegramProfileResponse);
 }
 
 message StartTelegramRequest {
@@ -16,4 +17,14 @@ message StartTelegramResponse {
   string user_id = 1;
   string access_token = 2;
   string refresh_token = 3;
+}
+
+message GetTelegramProfileRequest {
+  string telegram_id = 1;
+}
+
+message GetTelegramProfileResponse {
+  string user_id = 1;
+  string telegram_id = 2;
+  string email = 3;
 }

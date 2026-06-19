@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_StartTelegram_FullMethodName = "/auth.v1.AuthService/StartTelegram"
+	AuthService_StartTelegram_FullMethodName      = "/auth.v1.AuthService/StartTelegram"
+	AuthService_GetTelegramProfile_FullMethodName = "/auth.v1.AuthService/GetTelegramProfile"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -27,6 +28,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
 	StartTelegram(ctx context.Context, in *StartTelegramRequest, opts ...grpc.CallOption) (*StartTelegramResponse, error)
+	GetTelegramProfile(ctx context.Context, in *GetTelegramProfileRequest, opts ...grpc.CallOption) (*GetTelegramProfileResponse, error)
 }
 
 type authServiceClient struct {
@@ -47,11 +49,22 @@ func (c *authServiceClient) StartTelegram(ctx context.Context, in *StartTelegram
 	return out, nil
 }
 
+func (c *authServiceClient) GetTelegramProfile(ctx context.Context, in *GetTelegramProfileRequest, opts ...grpc.CallOption) (*GetTelegramProfileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetTelegramProfileResponse)
+	err := c.cc.Invoke(ctx, AuthService_GetTelegramProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
 type AuthServiceServer interface {
 	StartTelegram(context.Context, *StartTelegramRequest) (*StartTelegramResponse, error)
+	GetTelegramProfile(context.Context, *GetTelegramProfileRequest) (*GetTelegramProfileResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -64,6 +77,9 @@ type UnimplementedAuthServiceServer struct{}
 
 func (UnimplementedAuthServiceServer) StartTelegram(context.Context, *StartTelegramRequest) (*StartTelegramResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartTelegram not implemented")
+}
+func (UnimplementedAuthServiceServer) GetTelegramProfile(context.Context, *GetTelegramProfileRequest) (*GetTelegramProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTelegramProfile not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -104,6 +120,24 @@ func _AuthService_StartTelegram_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_GetTelegramProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTelegramProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetTelegramProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_GetTelegramProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetTelegramProfile(ctx, req.(*GetTelegramProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -114,6 +148,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartTelegram",
 			Handler:    _AuthService_StartTelegram_Handler,
+		},
+		{
+			MethodName: "GetTelegramProfile",
+			Handler:    _AuthService_GetTelegramProfile_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

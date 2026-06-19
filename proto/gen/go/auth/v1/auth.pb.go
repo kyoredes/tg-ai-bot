@@ -125,6 +125,110 @@ func (x *StartTelegramResponse) GetRefreshToken() string {
 	return ""
 }
 
+type GetTelegramProfileRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TelegramId    string                 `protobuf:"bytes,1,opt,name=telegram_id,json=telegramId,proto3" json:"telegram_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTelegramProfileRequest) Reset() {
+	*x = GetTelegramProfileRequest{}
+	mi := &file_auth_v1_auth_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTelegramProfileRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTelegramProfileRequest) ProtoMessage() {}
+
+func (x *GetTelegramProfileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTelegramProfileRequest.ProtoReflect.Descriptor instead.
+func (*GetTelegramProfileRequest) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *GetTelegramProfileRequest) GetTelegramId() string {
+	if x != nil {
+		return x.TelegramId
+	}
+	return ""
+}
+
+type GetTelegramProfileResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	TelegramId    string                 `protobuf:"bytes,2,opt,name=telegram_id,json=telegramId,proto3" json:"telegram_id,omitempty"`
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetTelegramProfileResponse) Reset() {
+	*x = GetTelegramProfileResponse{}
+	mi := &file_auth_v1_auth_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetTelegramProfileResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetTelegramProfileResponse) ProtoMessage() {}
+
+func (x *GetTelegramProfileResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetTelegramProfileResponse.ProtoReflect.Descriptor instead.
+func (*GetTelegramProfileResponse) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetTelegramProfileResponse) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *GetTelegramProfileResponse) GetTelegramId() string {
+	if x != nil {
+		return x.TelegramId
+	}
+	return ""
+}
+
+func (x *GetTelegramProfileResponse) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
 var File_auth_v1_auth_proto protoreflect.FileDescriptor
 
 const file_auth_v1_auth_proto_rawDesc = "" +
@@ -136,9 +240,18 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\x15StartTelegramResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\faccess_token\x18\x02 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x03 \x01(\tR\frefreshToken2]\n" +
+	"\rrefresh_token\x18\x03 \x01(\tR\frefreshToken\"<\n" +
+	"\x19GetTelegramProfileRequest\x12\x1f\n" +
+	"\vtelegram_id\x18\x01 \x01(\tR\n" +
+	"telegramId\"l\n" +
+	"\x1aGetTelegramProfileResponse\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
+	"\vtelegram_id\x18\x02 \x01(\tR\n" +
+	"telegramId\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email2\xbc\x01\n" +
 	"\vAuthService\x12N\n" +
-	"\rStartTelegram\x12\x1d.auth.v1.StartTelegramRequest\x1a\x1e.auth.v1.StartTelegramResponseB$Z\"rageai/proto/gen/go/auth/v1;authv1b\x06proto3"
+	"\rStartTelegram\x12\x1d.auth.v1.StartTelegramRequest\x1a\x1e.auth.v1.StartTelegramResponse\x12]\n" +
+	"\x12GetTelegramProfile\x12\".auth.v1.GetTelegramProfileRequest\x1a#.auth.v1.GetTelegramProfileResponseB$Z\"rageai/proto/gen/go/auth/v1;authv1b\x06proto3"
 
 var (
 	file_auth_v1_auth_proto_rawDescOnce sync.Once
@@ -152,16 +265,20 @@ func file_auth_v1_auth_proto_rawDescGZIP() []byte {
 	return file_auth_v1_auth_proto_rawDescData
 }
 
-var file_auth_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_auth_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_auth_v1_auth_proto_goTypes = []any{
-	(*StartTelegramRequest)(nil),  // 0: auth.v1.StartTelegramRequest
-	(*StartTelegramResponse)(nil), // 1: auth.v1.StartTelegramResponse
+	(*StartTelegramRequest)(nil),       // 0: auth.v1.StartTelegramRequest
+	(*StartTelegramResponse)(nil),      // 1: auth.v1.StartTelegramResponse
+	(*GetTelegramProfileRequest)(nil),  // 2: auth.v1.GetTelegramProfileRequest
+	(*GetTelegramProfileResponse)(nil), // 3: auth.v1.GetTelegramProfileResponse
 }
 var file_auth_v1_auth_proto_depIdxs = []int32{
 	0, // 0: auth.v1.AuthService.StartTelegram:input_type -> auth.v1.StartTelegramRequest
-	1, // 1: auth.v1.AuthService.StartTelegram:output_type -> auth.v1.StartTelegramResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	2, // 1: auth.v1.AuthService.GetTelegramProfile:input_type -> auth.v1.GetTelegramProfileRequest
+	1, // 2: auth.v1.AuthService.StartTelegram:output_type -> auth.v1.StartTelegramResponse
+	3, // 3: auth.v1.AuthService.GetTelegramProfile:output_type -> auth.v1.GetTelegramProfileResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -178,7 +295,7 @@ func file_auth_v1_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_v1_auth_proto_rawDesc), len(file_auth_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
