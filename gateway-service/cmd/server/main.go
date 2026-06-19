@@ -30,6 +30,7 @@ func main() {
 	config.Init()
 	cfg := config.NewConfig()
 	authConfig := config.NewAuthConfig()
+	subConfig := config.NewSubConfig()
 	// redisConfig := config.NewRedisConfig()
 	devConfig := config.NewDevConfig()
 	ctx := context.Background()
@@ -42,7 +43,7 @@ func main() {
 
 	logger.Info("Starting server... with", zap.String("host", cfg.Host), zap.String("port", cfg.Port))
 
-	telegramService := service.NewTelegramService(authConfig, restyClient)
+	telegramService := service.NewTelegramService(authConfig, subConfig, restyClient)
 	// serverTokenService, err := service.NewServerTokenService(ctx, cfg.ServerTokenTTL, redisClient)
 	// if err != nil {
 	// 	logger.Fatal("failed to create server token service", zap.Error(err))

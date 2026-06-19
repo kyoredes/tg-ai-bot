@@ -18,11 +18,12 @@ type TelegramService struct {
 	restyClient *resty.Client
 }
 
-func NewTelegramService(authConfig *config.AuthConfig, restyClient *resty.Client) *TelegramService {
+func NewTelegramService(authConfig *config.AuthConfig, subConfig *config.SubConfig, restyClient *resty.Client) *TelegramService {
 	restyClient.SetTimeout(time.Duration(authConfig.AuthTimeout) * time.Second)
 	restyClient.SetRetryCount(authConfig.AuthRetryCount)
 	return &TelegramService{
 		authConfig:  authConfig,
+		subConfig:   subConfig,
 		restyClient: restyClient,
 	}
 }
@@ -36,7 +37,7 @@ func (s *TelegramService) StartTelegram(telegramID string) (*dto.TelegramInfo, e
 		restyClient,
 		&dto.Request{
 			Method: "POST",
-			URL:    "http://" + s.authConfig.AuthHost + ":" + s.authConfig.AuthPort + "/auth/telegram/start",
+			URL:    "http://" + s.authConfig.AuthHost + ":" + s.authConfig.AuthPort + "/telegram/start",
 			Body:   []byte(`{"TelegramID": "` + telegramID + `"}`),
 			Headers: map[string]string{
 				"Authorization": "Bearer " + s.authConfig.AuthAPIKey,
