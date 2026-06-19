@@ -107,18 +107,45 @@ services:
       HOST: 0.0.0.0
       PORT: 8000
       LOGGING_MODE: text
-      TIMEOUT: 10s
+      TIMEOUT: 30s
       AUTH_HOST: auth-service
       AUTH_GRPC_PORT: 50051
       AUTH_TIMEOUT: 10
       SUB_HOST: subscription-service
       SUB_GRPC_PORT: 50052
+      AI_HOST: ai-service
+      AI_GRPC_PORT: 50053
       COMMON_PUB_KEY: ${COMMON_PUB_KEY:-secret}
     depends_on:
       - auth-service
       - subscription-service
+      - ai-service
     ports:
       - "8000:8000"
+
+  ai-service:
+    build:
+      context: ..
+      dockerfile: ai-service/Dockerfile
+    container_name: rageai-ai-service
+    restart: unless-stopped
+    environment:
+      DEBUG: ${AI_DEBUG:-true}
+      LOG_LEVEL: INFO
+      GRPC_HOST: 0.0.0.0
+      GRPC_PORT: 50053
+      REDIS_URL: redis://redis:6379/0
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_PASSWORD: ""
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "50053:50053"
 
   aiogram-service:
     build:
