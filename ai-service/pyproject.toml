@@ -1,0 +1,23 @@
+[project]
+name = "ai-service"
+version = "0.1.0"
+description = "RageAI LLM gRPC service"
+requires-python = ">=3.13"
+dependencies = [
+    "g4f>=0.6.0.2",
+    "grpcio>=1.70.0",
+    "grpcio-tools>=1.70.0",
+    "langchain-community>=0.3.27",
+    "langchain-core>=0.3.0",
+    "langchain-openai>=0.3.30",
+    "pydantic-settings>=2.10.1",
+    "redis>=6.4.0",
+]
+
+[tool.ruff]
+line-length = 100
+exclude = ["rpc/ai/v1/*_pb2*.py", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
