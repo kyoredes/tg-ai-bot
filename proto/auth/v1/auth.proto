@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package auth.v1;
+
+option go_package = "rageai/proto/gen/go/auth/v1;authv1";
+
+service AuthService {
+  rpc StartTelegram(StartTelegramRequest) returns (StartTelegramResponse);
+}
+
+message StartTelegramRequest {
+  string telegram_id = 1;
+}
+
+message StartTelegramResponse {
+  string user_id = 1;
+  string access_token = 2;
+  string refresh_token = 3;
+}

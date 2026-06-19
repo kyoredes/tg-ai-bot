@@ -5,6 +5,7 @@ import (
 	"subscription/internal/exception"
 	"subscription/internal/models"
 	"subscription/internal/repository"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -51,7 +52,7 @@ func (s *SubscriptionService) GetSubByUuid(id uuid.UUID) (*dto.SubscriptionDTO, 
 }
 
 func (s *SubscriptionService) GetOrCreateSub(subDTO *dto.CreateSubscriptionDTO) (*dto.SubscriptionDTO, error) {
-	sub, err := s.GetSubByUuid(subDTO.UserID)
+	sub, err := s.GetSubByUserId(subDTO.UserID)
 	if err != nil {
 		if err == exception.ErrSubscriptionNotFound {
 			sub, err = s.CreateSub(subDTO)
@@ -63,6 +64,23 @@ func (s *SubscriptionService) GetOrCreateSub(subDTO *dto.CreateSubscriptionDTO) 
 		return nil, err
 	}
 	return sub, nil
+}
+
+func (s *SubscriptionService) EnsureSubByUserId(userID uuid.UUID) (*dto.SubscriptionDTO, error) {
+	sub, err := s.GetSubByUserId(userID)
+	if err == nil {
+		return sub, nil
+	}
+	if err != exception.ErrSubscriptionNotFound {
+		return nil, err
+	}
+
+	now := time.Now()
+	return s.CreateSub(&dto.CreateSubscriptionDTO{
+		UserID:    userID,
+		StartsAt:  now,
+		ExpiresAt: now.AddDate(0, 1, 0),
+	})
 }
 
 func (s *SubscriptionService) GetSubByUserId(userId uuid.UUID) (*dto.SubscriptionDTO, error) {

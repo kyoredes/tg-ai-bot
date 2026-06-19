@@ -1,0 +1,175 @@
+{
+  "info": {
+    "_postman_id": "rageai-collection",
+    "name": "RageAI",
+    "description": "Запросы ко всем микросервисам RageAI.\n\nHTTP: gateway-service (порт 8000)\ngRPC: auth-service (50051), subscription-service (50052)\n\nДля gRPC-запросов в Postman импортируй proto-файлы из папки `postman/proto/`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "gateway-service (HTTP)",
+      "description": "Внешний HTTP API gateway. Требует заголовок Authorization = COMMON_PUB_KEY.",
+      "item": [
+        {
+          "name": "Telegram Start",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.info && body.info.userID) {",
+                  "        pm.environment.set('user_id', body.info.userID);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{common_pub_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telegramID\": \"{{telegram_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{gateway_base_url}}/telegram/start",
+              "host": [
+                "{{gateway_base_url}}"
+              ],
+              "path": [
+                "telegram",
+                "start"
+              ]
+            },
+            "description": "Регистрация/авторизация Telegram-пользователя через gateway.\n\nВызывает auth-service и subscription-service по gRPC."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "auth-service (gRPC)",
+      "description": "Прямые gRPC-запросы к auth-service.\n\nВ Postman: New → gRPC → Server URL `{{auth_grpc_url}}` → Import proto `postman/proto/auth/v1/auth.proto` → Method `auth.v1.AuthService/StartTelegram`",
+      "item": [
+        {
+          "name": "StartTelegram",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "grpc",
+              "grpc": [
+                {
+                  "key": "message",
+                  "value": "{\n  \"telegram_id\": \"{{telegram_id}}\"\n}",
+                  "type": "text"
+                }
+              ],
+              "options": {
+                "grpc": {
+                  "service": "auth.v1.AuthService",
+                  "method": "StartTelegram",
+                  "proto": "proto/auth/v1/auth.proto"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{auth_grpc_url}}",
+              "host": [
+                "{{auth_grpc_host}}"
+              ],
+              "port": "{{auth_grpc_port}}"
+            },
+            "description": "Создаёт или находит пользователя по Telegram ID, возвращает user_id и JWT-токены."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "subscription-service (gRPC)",
+      "description": "Прямые gRPC-запросы к subscription-service.\n\nВ Postman: New → gRPC → Server URL `{{sub_grpc_url}}` → Import proto `postman/proto/subscription/v1/subscription.proto` → Method `subscription.v1.SubscriptionService/GetSubscriptionByUserId`",
+      "item": [
+        {
+          "name": "GetSubscriptionByUserId",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "grpc",
+              "grpc": [
+                {
+                  "key": "message",
+                  "value": "{\n  \"user_id\": \"{{user_id}}\"\n}",
+                  "type": "text"
+                }
+              ],
+              "options": {
+                "grpc": {
+                  "service": "subscription.v1.SubscriptionService",
+                  "method": "GetSubscriptionByUserId",
+                  "proto": "proto/subscription/v1/subscription.proto"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{sub_grpc_url}}",
+              "host": [
+                "{{sub_grpc_host}}"
+              ],
+              "port": "{{sub_grpc_port}}"
+            },
+            "description": "Возвращает подписку пользователя. Если подписки нет — создаёт бесплатную на 1 месяц."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "gateway_base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "common_pub_key",
+      "value": "secret"
+    },
+    {
+      "key": "auth_grpc_url",
+      "value": "localhost:50051"
+    },
+    {
+      "key": "sub_grpc_url",
+      "value": "localhost:50052"
+    },
+    {
+      "key": "telegram_id",
+      "value": "123456789"
+    },
+    {
+      "key": "user_id",
+      "value": ""
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package subscription.v1;
+
+option go_package = "rageai/proto/gen/go/subscription/v1;subscriptionv1";
+
+service SubscriptionService {
+  rpc GetSubscriptionByUserId(GetSubscriptionByUserIdRequest) returns (GetSubscriptionByUserIdResponse);
+}
+
+message GetSubscriptionByUserIdRequest {
+  string user_id = 1;
+}
+
+message GetSubscriptionByUserIdResponse {
+  string subscription_id = 1;
+  string user_id = 2;
+  int64 starts_at = 3;
+  int64 expires_at = 4;
+}

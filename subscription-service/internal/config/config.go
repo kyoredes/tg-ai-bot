@@ -18,6 +18,21 @@ type Config struct {
 	Timeout                time.Duration
 }
 
+type GRPCConfig struct {
+	Host string
+	Port string
+}
+
+func NewGRPCConfig() *GRPCConfig {
+	host := viper.GetString("GRPC_HOST")
+	port := viper.GetString("GRPC_PORT")
+
+	return &GRPCConfig{
+		Host: host,
+		Port: port,
+	}
+}
+
 type DBConfig struct {
 	Host      string
 	Port      int
@@ -72,21 +87,12 @@ func NewDBConfig() *DBConfig {
 	}
 }
 
-type DevConfig struct {
-	CommonPubKey string
-}
-
-func NewDevConfig() *DevConfig {
-	commonPubKey := viper.GetString("COMMON_PUB_KEY")
-
-	return &DevConfig{
-		CommonPubKey: commonPubKey,
-	}
-}
 func Init() {
 	viper.AutomaticEnv()
 	viper.SetDefault("HOST", "localhost")
 	viper.SetDefault("PORT", "8099")
+	viper.SetDefault("GRPC_HOST", "0.0.0.0")
+	viper.SetDefault("GRPC_PORT", "50052")
 	viper.SetDefault("DB_HOST", "localhost")
 	viper.SetDefault("DB_PORT", 5430)
 	viper.SetDefault("DB_USER", "postgres")
@@ -101,6 +107,4 @@ func Init() {
 	viper.SetDefault("REFRESH_TOKEN_EXPIRATION", 86400)
 	viper.SetDefault("TIMEOUT", "5s")
 	viper.SetDefault("DB_SSL", "require")
-
-	viper.SetDefault("COMMON_PUB_KEY", "secret")
 }

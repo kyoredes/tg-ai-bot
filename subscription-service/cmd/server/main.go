@@ -1,45 +1,43 @@
 package main
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"subscription/internal/config"
-	"subscription/internal/handler"
+	"subscription/internal/grpcserver"
 	"subscription/internal/logging"
-	"subscription/internal/middleware"
 	"subscription/internal/models"
 	"subscription/internal/repository"
-	"subscription/internal/router"
-	"subscription/internal/server"
 	"subscription/internal/service"
 	"subscription/internal/storage"
 	"syscall"
-	"time"
 
 	"github.com/subosito/gotenv"
 	"go.uber.org/zap"
 )
 
 func main() {
-	if err := gotenv.Load(".env"); err != nil {
+	if err := gotenv.Load(".env"); err != nil && !os.IsNotExist(err) {
 		fmt.Println(err)
 		return
 	}
 	config.Init()
 	cfg := config.NewConfig()
-	ctx := context.Background()
+	grpcCfg := config.NewGRPCConfig()
 
-	logging.InitLogger(cfg.LoggingMode)
+	if err := logging.InitLogger(cfg.LoggingMode); err != nil {
+		fmt.Println(err)
+		return
+	}
 	logger := logging.Logger
 
-	devConfig := config.NewDevConfig()
-	dbConfig := config.NewDBConfig()
+	logger.Info("Starting subscription-service gRPC server",
+		zap.String("host", grpcCfg.Host),
+		zap.String("port", grpcCfg.Port),
+	)
 
-	logger.Info("Starting server... with", zap.String("host", cfg.Host), zap.String("port", cfg.Port))
+	dbConfig := config.NewDBConfig()
 	db, err := storage.NewDatabase(dbConfig, models.ModelsList)
 	if err != nil {
 		logger.Fatal("failed to create database", zap.Error(err))
@@ -48,18 +46,15 @@ func main() {
 	subscriptionRepo := repository.NewSubscriptionRepository(db)
 	subscriptionService := service.NewSubscriptionService(subscriptionRepo)
 
-	h := handler.NewHandler(subscriptionService)
-	serverAuthMiddleware := middleware.DevAuthMiddleware(devConfig)
-	router := router.SetupRouter(h, serverAuthMiddleware)
-
-	srv, err := server.NewServer(cfg, h, router)
+	grpcSubServer := grpcserver.NewSubscriptionServer(subscriptionService)
+	grpcSrv, err := grpcserver.NewServer(grpcCfg, grpcSubServer)
 	if err != nil {
-		logger.Fatal("failed to create server", zap.Error(err))
+		logger.Fatal("failed to create gRPC server", zap.Error(err))
 	}
 
 	go func() {
-		if err := srv.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			logger.Fatal("Error while starting server", zap.Error(err))
+		if err := grpcSrv.Start(); err != nil {
+			logger.Fatal("Error while starting gRPC server", zap.Error(err))
 		}
 	}()
 
@@ -70,13 +65,6 @@ func main() {
 	<-quit
 
 	logger.Info("Shutting down server...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := srv.Stop(ctx); err != nil {
-		logger.Error("Error while stopping server", zap.Error(err))
-	}
-
+	grpcSrv.Stop()
 	logger.Info("Server stopped")
 }
