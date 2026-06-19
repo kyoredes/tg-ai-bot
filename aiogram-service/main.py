@@ -2,6 +2,7 @@ import asyncio
 import logging
 from config.core import settings
 from aiogram import Bot, Dispatcher
+from aiogram.fsm.storage.memory import MemoryStorage
 from middleware.throttling import ThrottlingMiddleware
 from core.routers import main_router
 from users.routers import users_router
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=LOG_LEVEL)
 
 bot = Bot(token=settings.BOT_TOKEN)
-dp = Dispatcher()
+dp = Dispatcher(storage=MemoryStorage())
 dp.message.middleware(ThrottlingMiddleware())
 dp.include_router(main_router)
 dp.include_router(users_router)

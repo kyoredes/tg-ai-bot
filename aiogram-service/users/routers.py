@@ -1,9 +1,15 @@
 from aiogram import Router, F, types
 from aiogram.filters import CommandStart
+from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from core.keyboards import get_back_keyboard, get_start_keyboard
-from users.answers import get_profile_info_answer, get_subscription_info_answer
+from users.answers import (
+    CHAT_ERROR_ANSWER,
+    get_profile_info_answer,
+    get_subscription_info_answer,
+)
 from users.manager import UserManager
+from users.states import NeuroStates
 
 users_router = Router(name="users")
 
@@ -53,3 +59,27 @@ async def get_subscription(callback: types.CallbackQuery):
         reply_markup=get_back_keyboard(),
     )
     await callback.answer()
+
+
+@users_router.callback_query(F.data == "neuro")
+async def neuro_start(callback: types.CallbackQuery, state: FSMContext):
+    await state.set_state(NeuroStates.waiting_prompt)
+    await callback.message.answer(
+        "Напиши свой вопрос нейросети:",
+        reply_markup=get_back_keyboard(),
+    )
+    await callback.answer()
+
+
+@users_router.message(NeuroStates.waiting_prompt)
+async def neuro_chat(message: Message, state: FSMContext):
+    try:
+        user_manager = UserManager()
+        chat = await user_manager.chat(str(message.from_user.id), message.text or "")
+        if chat is None or not chat.response:
+            await message.answer(CHAT_ERROR_ANSWER, reply_markup=get_back_keyboard())
+            return
+
+        await message.answer(chat.response, reply_markup=get_back_keyboard())
+    except Exception:
+        await message.answer(CHAT_ERROR_ANSWER, reply_markup=get_back_keyboard())

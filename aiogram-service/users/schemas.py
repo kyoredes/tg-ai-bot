@@ -16,3 +16,8 @@ class SubscriptionModel(BaseModel):
     user_id: str
     starts_at: int
     expires_at: int
+
+
+class ChatModel(BaseModel):
+    tg_id: str
+    response: str

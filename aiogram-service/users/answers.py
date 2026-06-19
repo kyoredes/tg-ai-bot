@@ -37,3 +37,8 @@ async def get_subscription_info_answer(subscription: SubscriptionModel) -> str:
         f"📅 *Действует до:* {_format_ts(subscription.expires_at)}",
     ]
     return "\n".join(lines)
+
+
+CHAT_ERROR_ANSWER = (
+    "Извините, произошла ошибка. Пожалуйста, напишите в поддержку."
+)
