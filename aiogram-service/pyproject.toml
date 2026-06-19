@@ -1,0 +1,12 @@
+[project]
+name = "tg-server"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiogram>=3.27.0",
+    "httpx>=0.28.1",
+    "pydantic-settings>=2.13.1",
+    "watchfiles>=1.1.1",
+]
