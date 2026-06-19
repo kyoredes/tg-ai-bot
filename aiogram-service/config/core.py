@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     GATEWAY_PORT: str
     COMMON_PUB_KEY: str
     LOG_LEVEL: str = "INFO"
+    HTTP_TIMEOUT: float = 120.0
 
     class Config:
         env_file = ".env"

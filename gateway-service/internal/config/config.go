@@ -91,7 +91,7 @@ func Init() {
 	viper.SetDefault("HOST", "0.0.0.0")
 	viper.SetDefault("PORT", "8000")
 	viper.SetDefault("LOGGING_MODE", "text")
-	viper.SetDefault("TIMEOUT", "10s")
+	viper.SetDefault("TIMEOUT", "120s")
 
 	viper.SetDefault("AUTH_HOST", "localhost")
 	viper.SetDefault("AUTH_GRPC_PORT", "50051")

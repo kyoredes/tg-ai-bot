@@ -8,7 +8,7 @@ class LiteLLMSettings(BaseSettings):
     API_KEY: str = ""
     API_BASE: str = ""
     CUSTOM_PROVIDER: str = ""
-    REQUEST_TIMEOUT: float = 60.0
+    REQUEST_TIMEOUT: float = 120.0
     MAX_RETRIES: int = 2
 
     model_config = SettingsConfigDict(

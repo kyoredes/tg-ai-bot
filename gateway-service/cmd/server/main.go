@@ -49,14 +49,11 @@ func main() {
 	}
 	defer grpcClients.Close()
 
-	telegramService := service.NewTelegramService(
-		grpcClients,
-		time.Duration(authConfig.AuthTimeout)*time.Second,
-	)
+	telegramService := service.NewTelegramService(grpcClients, cfg.Timeout)
 	adminService := service.NewAdminService(
 		grpcClients,
 		adminConfig,
-		time.Duration(authConfig.AuthTimeout)*time.Second,
+		cfg.Timeout,
 	)
 
 	h := handler.NewHandler(telegramService, adminService)

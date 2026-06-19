@@ -31,7 +31,7 @@ class UserManager:
 
     @asynccontextmanager
     async def _get_client(self):
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=settings.HTTP_TIMEOUT) as client:
             yield client
 
     async def _get_headers(self) -> dict:
@@ -142,7 +142,6 @@ class UserManager:
                     headers=headers,
                     url=f"http://{self.backend_url}/telegram/chat",
                     json=body,
-                    timeout=60.0,
                 )
                 if response.status_code != 200:
                     logger.error(
