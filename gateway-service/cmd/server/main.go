@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gateway/internal/client"
 	"gateway/internal/config"
 	"gateway/internal/handler"
 	"gateway/internal/logging"
@@ -19,11 +20,10 @@ import (
 
 	"github.com/subosito/gotenv"
 	"go.uber.org/zap"
-	"resty.dev/v3"
 )
 
 func main() {
-	if err := gotenv.Load(".env"); err != nil {
+	if err := gotenv.Load(".env"); err != nil && !os.IsNotExist(err) {
 		fmt.Println(err)
 		return
 	}
@@ -31,29 +31,32 @@ func main() {
 	cfg := config.NewConfig()
 	authConfig := config.NewAuthConfig()
 	subConfig := config.NewSubConfig()
-	// redisConfig := config.NewRedisConfig()
 	devConfig := config.NewDevConfig()
-	ctx := context.Background()
-	restyClient := resty.New()
 
-	// redisClient := storage.NewRedisClient(redisConfig)
-
-	logging.InitLogger(cfg.LoggingMode)
+	if err := logging.InitLogger(cfg.LoggingMode); err != nil {
+		fmt.Println(err)
+		return
+	}
 	logger := logging.Logger
 
 	logger.Info("Starting server... with", zap.String("host", cfg.Host), zap.String("port", cfg.Port))
 
-	telegramService := service.NewTelegramService(authConfig, subConfig, restyClient)
-	// serverTokenService, err := service.NewServerTokenService(ctx, cfg.ServerTokenTTL, redisClient)
-	// if err != nil {
-	// 	logger.Fatal("failed to create server token service", zap.Error(err))
-	// }
+	grpcClients, err := client.NewClients(authConfig, subConfig)
+	if err != nil {
+		logger.Fatal("failed to create gRPC clients", zap.Error(err))
+	}
+	defer grpcClients.Close()
+
+	telegramService := service.NewTelegramService(
+		grpcClients,
+		time.Duration(authConfig.AuthTimeout)*time.Second,
+	)
 
 	h := handler.NewHandler(telegramService)
 	serverAuthMiddleware := middleware.DevAuthMiddleware(devConfig)
 	router := router.SetupRouter(h, serverAuthMiddleware)
 
-	srv, err := server.NewServer(cfg, h, router)
+	srv, err := server.NewServer(cfg, router)
 	if err != nil {
 		logger.Fatal("failed to create server", zap.Error(err))
 	}

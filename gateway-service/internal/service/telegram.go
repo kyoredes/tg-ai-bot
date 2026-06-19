@@ -1,84 +1,60 @@
 package service
 
 import (
-	"gateway/internal/config"
+	"context"
+	"gateway/internal/client"
 	"gateway/internal/dto"
 	"gateway/internal/exceptions"
 	"gateway/internal/logging"
-	"gateway/internal/utils"
 	"time"
 
+	authv1 "rageai/proto/gen/go/auth/v1"
+	subscriptionv1 "rageai/proto/gen/go/subscription/v1"
+
 	"go.uber.org/zap"
-	"resty.dev/v3"
 )
 
 type TelegramService struct {
-	authConfig  *config.AuthConfig
-	subConfig   *config.SubConfig
-	restyClient *resty.Client
+	clients *client.Clients
+	timeout time.Duration
 }
 
-func NewTelegramService(authConfig *config.AuthConfig, subConfig *config.SubConfig, restyClient *resty.Client) *TelegramService {
-	restyClient.SetTimeout(time.Duration(authConfig.AuthTimeout) * time.Second)
-	restyClient.SetRetryCount(authConfig.AuthRetryCount)
+func NewTelegramService(clients *client.Clients, timeout time.Duration) *TelegramService {
 	return &TelegramService{
-		authConfig:  authConfig,
-		subConfig:   subConfig,
-		restyClient: restyClient,
+		clients: clients,
+		timeout: timeout,
 	}
 }
 
 func (s *TelegramService) StartTelegram(telegramID string) (*dto.TelegramInfo, error) {
 	logger := logging.Logger
-	restyClient := s.restyClient
-	ch := make(chan dto.Response, 1)
+	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
+	defer cancel()
 
-	go utils.MakeRequest(
-		restyClient,
-		&dto.Request{
-			Method: "POST",
-			URL:    "http://" + s.authConfig.AuthHost + ":" + s.authConfig.AuthPort + "/telegram/start",
-			Body:   []byte(`{"TelegramID": "` + telegramID + `"}`),
-			Headers: map[string]string{
-				"Authorization": "Bearer " + s.authConfig.AuthAPIKey,
-				"Content-Type":  "application/json",
-			},
-			ExpectedStatusCode: 200,
-		},
-		ch,
-	)
-	responseRawAuth := <-ch
-	raw, ok := responseRawAuth.Body["data"]
-	if !ok || raw == nil {
-		logger.Error("error response: empty data from auth service")
+	authResp, err := s.clients.Auth.StartTelegram(ctx, &authv1.StartTelegramRequest{
+		TelegramId: telegramID,
+	})
+	if err != nil {
+		logger.Error("auth service grpc call failed", zap.Error(err))
 		return nil, exceptions.ErrResponseExternalService
 	}
 
-	data, ok := responseRawAuth.Body["data"].(map[string]any)
-	if !ok {
-		logger.Error("error respose: empty data from auth service")
+	if authResp.GetUserId() == "" {
+		logger.Error("auth service returned empty user_id")
 		return nil, exceptions.ErrResponseExternalService
 	}
-	userId := data["user_id"].(string)
-	go utils.MakeRequest(
-		restyClient,
-		&dto.Request{
-			Method: "GET",
-			URL:    "https://" + s.subConfig.SubHost + ":" + s.subConfig.SubPort + "/subscription/?user_id=" + userId,
-			Headers: map[string]string{
-				"Authorization": "Bearer " + s.subConfig.SubAPIKey,
-				"Content-Type":  "application/json",
-			},
-			ExpectedStatusCode: 200,
-		},
-		ch,
-	)
-	responseRawSub := <-ch
-	if !responseRawSub.Success {
-		logger.Error("error response from sub service", zap.Int("status_code", responseRawSub.StatusCode))
+
+	_, err = s.clients.Subscription.GetSubscriptionByUserId(ctx, &subscriptionv1.GetSubscriptionByUserIdRequest{
+		UserId: authResp.GetUserId(),
+	})
+	if err != nil {
+		logger.Error("subscription service grpc call failed", zap.Error(err))
 		return nil, exceptions.ErrResponseExternalService
 	}
+
 	return &dto.TelegramInfo{
 		TelegramID: telegramID,
+		UserID:     authResp.GetUserId(),
+		DeviceID:   telegramID,
 	}, nil
 }

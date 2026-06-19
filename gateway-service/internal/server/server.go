@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"gateway/internal/config"
-	"gateway/internal/handler"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,12 +21,13 @@ func (s *Server) Start() error {
 func (s *Server) Stop(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }
-func NewServer(cfg *config.Config, h *handler.Handler, router *gin.Engine) (*Server, error) {
+
+func NewServer(cfg *config.Config, router *gin.Engine) (*Server, error) {
 	if cfg == nil {
 		return nil, errors.New("config is nil")
 	}
-	if h == nil {
-		return nil, errors.New("handler is nil")
+	if router == nil {
+		return nil, errors.New("router is nil")
 	}
 
 	httpServer := &http.Server{
@@ -41,5 +41,4 @@ func NewServer(cfg *config.Config, h *handler.Handler, router *gin.Engine) (*Ser
 		cfg:        cfg,
 		httpServer: httpServer,
 	}, nil
-
 }
