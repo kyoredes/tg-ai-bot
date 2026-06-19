@@ -1,4 +1,3 @@
-import json
 import logging
 
 from llm.g4f_setup import disable_g4f_media_writes
@@ -6,16 +5,14 @@ from llm.g4f_setup import disable_g4f_media_writes
 disable_g4f_media_writes()
 
 from g4f.client import AsyncClient
-from redis.asyncio import Redis
-from redis.backoff import NoBackoff
-from redis.retry import Retry
 
 from config.prompts import G4F_SYSTEM_PROMPT
 from config.settings import settings
 from llm.errors import G4F_FALLBACK_ERROR_MESSAGE, LLMUserFacingError
 from llm.g4f_models import G4F_FALLBACK_MODELS, G4F_MODELS, G4FModelConfig
+from llm.history.messages import to_openai_messages
+from llm.history.store import ChatHistoryStore
 from utils.response import is_invalid_llm_response
-from utils.text import truncate_text_by_words
 
 logger = logging.getLogger(__name__)
 
@@ -24,62 +21,12 @@ class G4FManager:
     def __init__(self, session_id: str, *, fallback_mode: bool = False):
         self.client = AsyncClient()
         self.fallback_mode = fallback_mode
-        self.redis_client = Redis(
-            host=settings.REDIS_HOST,
-            port=settings.REDIS_PORT,
-            db=settings.REDIS_DB,
-            password=settings.REDIS_PASSWORD or None,
-            decode_responses=True,
-            socket_timeout=5,
-            socket_connect_timeout=5,
-            retry_on_timeout=False,
-            retry=Retry(NoBackoff(), 0),
-        )
-        self.history_key = f"g4f_history:{session_id}"
-        self.default_history = [
-            {"role": "system", "content": G4F_SYSTEM_PROMPT},
-        ]
-        self.redis_status = True
+        self.history = ChatHistoryStore(session_id)
 
     def _models_to_try(self) -> tuple[G4FModelConfig, ...]:
         if self.fallback_mode or settings.DEBUG:
             return G4F_FALLBACK_MODELS
         return G4F_MODELS
-
-    def _sanitize_history(self, history: list[dict]) -> list[dict]:
-        cleaned = [self.default_history[0]]
-        for message in history:
-            if message.get("role") == "system":
-                continue
-            if is_invalid_llm_response(message.get("content")):
-                continue
-            cleaned.append(message)
-        return cleaned if len(cleaned) > 1 else list(self.default_history)
-
-    async def _load_history(self) -> list[dict]:
-        if not self.redis_status:
-            return list(self.default_history)
-        try:
-            history = await self.redis_client.get(self.history_key)
-            if history:
-                return self._sanitize_history(json.loads(history))
-            await self._save_history(self.default_history)
-            return list(self.default_history)
-        except Exception as exc:
-            logger.error("Error loading history: %s", exc)
-            return list(self.default_history)
-
-    async def _save_history(self, history: list[dict]) -> None:
-        if not self.redis_status:
-            return
-        try:
-            await self.redis_client.set(
-                name=self.history_key,
-                value=json.dumps(history or self.default_history),
-                ex=60 * 60 * 24 * 7,
-            )
-        except Exception as exc:
-            logger.error("Error saving history: %s", exc)
 
     async def _request_with_model(
         self,
@@ -154,28 +101,18 @@ class G4FManager:
         raise LLMUserFacingError(G4F_FALLBACK_ERROR_MESSAGE)
 
     async def _add_message(self, role: str, content: str) -> None:
-        if is_invalid_llm_response(content):
-            return
-        message = await truncate_text_by_words(content)
-        history = await self._load_history()
-        history.append({"role": role, "content": message})
-        await self._save_history(history)
-
-    async def _check_redis(self) -> bool:
-        try:
-            await self.redis_client.ping()
-            return True
-        except Exception as exc:
-            logger.error("Redis ping failed: %s", exc)
-            return False
+        await self.history.append(role, content)
 
     async def make_request(self, message: str) -> str | None:
-        self.redis_status = await self._check_redis()
+        await self.history.ping()
         await self._add_message("user", message)
 
         try:
-            history = await self._load_history()
-            response = await self._get_response(history)
+            messages = to_openai_messages(
+                G4F_SYSTEM_PROMPT,
+                await self.history.load(),
+            )
+            response = await self._get_response(messages)
             await self._add_message("assistant", response)
             return response
         except LLMUserFacingError:

@@ -1,4 +1,4 @@
-# RageAI
+# AI Bot
 
 Бот с AI на базе микросервисной архитектуры. Бекенд написан на Go и Python.
 
@@ -52,7 +52,7 @@ ai-service (OpenAI в prod, G4F как fallback / только G4F в dev)
 ## Структура репозитория
 
 ```
-agrobot/
+ai-bot/
 ├── aiogram-service/
 ├── gateway-service/
 ├── auth-service/
@@ -79,8 +79,8 @@ agrobot/
 Требования: Docker, Docker Compose
 
 ```bash
-git clone https://github.com/kyoredes/rage-ai.git
-cd rage-ai
+git clone <repository-url>
+cd ai-bot
 
 cp deploy/.env.example deploy/.env
 # заполни BOT_TOKEN и при необходимости OPENAI_API_KEY

@@ -1,6 +1,6 @@
 > 🇷🇺 [Русская версия / Russian version](README.ru.md)
 
-# RageAI
+# AI Bot
 
 An AI-powered Telegram bot built on a microservices architecture. Backend services are written in Go and Python.
 
@@ -54,7 +54,7 @@ Response delivered back to the user
 ## Repository layout
 
 ```
-agrobot/
+ai-bot/
 ├── aiogram-service/
 ├── gateway-service/
 ├── auth-service/
@@ -81,8 +81,8 @@ agrobot/
 Requirements: Docker, Docker Compose
 
 ```bash
-git clone https://github.com/kyoredes/rage-ai.git
-cd rage-ai
+git clone <repository-url>
+cd ai-bot
 
 cp deploy/.env.example deploy/.env
 # set BOT_TOKEN and OPENAI_API_KEY if needed

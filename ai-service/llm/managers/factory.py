@@ -1,10 +1,10 @@
 from config.settings import settings
 from llm.choices import ProviderChoiceGPT
 from llm.managers.g4f_manager import G4FManager
-from llm.managers.openai_manager import OpenAIManager
+from llm.managers.litellm_manager import LiteLLMManager
 
 providers_factory = {
-    ProviderChoiceGPT.OPENAI: OpenAIManager,
+    ProviderChoiceGPT.LITELLM: LiteLLMManager,
     ProviderChoiceGPT.G4F: G4FManager,
 }
 

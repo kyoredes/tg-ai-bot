@@ -2,6 +2,6 @@ from enum import Enum
 
 
 class ProviderChoiceGPT(str, Enum):
-    OPENAI = "openai"
+    LITELLM = "litellm"
     G4F = "g4f"
     ANY = "any"
