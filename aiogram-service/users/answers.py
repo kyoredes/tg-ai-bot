@@ -42,3 +42,6 @@ async def get_subscription_info_answer(subscription: SubscriptionModel) -> str:
 CHAT_ERROR_ANSWER = (
     "Извините, произошла ошибка. Пожалуйста, напишите в поддержку."
 )
+
+CLEAR_CONTEXT_OK_ANSWER = "Контекст диалога очищен. Можешь начать новый разговор."
+CLEAR_CONTEXT_ERROR_ANSWER = "Не удалось очистить контекст. Попробуйте позже."

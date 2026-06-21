@@ -165,3 +165,26 @@ class UserManager:
             except Exception as e:
                 logger.error("Error in chat %s: %s", tg_id, e)
                 return None
+
+    async def clear_chat(self, tg_id: str) -> bool:
+        headers = await self._get_headers()
+        body = {"telegramID": tg_id}
+        async with self._get_client() as client:
+            try:
+                response = await client.post(
+                    headers=headers,
+                    url=f"http://{self.backend_url}/telegram/chat/clear",
+                    json=body,
+                )
+                if response.status_code != 200:
+                    logger.error(
+                        "Unable to clear chat for client %s: status %s",
+                        tg_id,
+                        response.status_code,
+                    )
+                    return False
+                result = response.json()
+                return result.get("status") == "ok"
+            except Exception as e:
+                logger.error("Error clearing chat %s: %s", tg_id, e)
+                return False

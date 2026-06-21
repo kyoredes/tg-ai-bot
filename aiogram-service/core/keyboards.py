@@ -14,6 +14,15 @@ def get_start_keyboard():
     )
 
 
+def get_neuro_keyboard():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="🗑 Очистить контекст", callback_data="clear_context")],
+            [InlineKeyboardButton(text="👈 Назад", callback_data="main_menu")],
+        ]
+    )
+
+
 def get_back_keyboard():
     return InlineKeyboardMarkup(
         inline_keyboard=[

@@ -21,6 +21,7 @@ func SetupRouter(
 	tg.POST("/profile", h.Telegram.GetProfile)
 	tg.POST("/subscription", h.Telegram.GetSubscription)
 	tg.POST("/chat", h.Telegram.Chat)
+	tg.POST("/chat/clear", h.Telegram.ClearChat)
 
 	admin := router.Group("/admin")
 	admin.POST("/login", h.Admin.Login)

@@ -2,10 +2,12 @@ from aiogram import Router, F, types
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from core.keyboards import get_back_keyboard, get_start_keyboard
+from core.keyboards import get_back_keyboard, get_neuro_keyboard, get_start_keyboard
 from core.typing_indicator import show_typing
 from users.answers import (
     CHAT_ERROR_ANSWER,
+    CLEAR_CONTEXT_ERROR_ANSWER,
+    CLEAR_CONTEXT_OK_ANSWER,
     get_profile_info_answer,
     get_subscription_info_answer,
 )
@@ -67,7 +69,7 @@ async def neuro_start(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(NeuroStates.waiting_prompt)
     await callback.message.answer(
         "Напиши свой вопрос нейросети:",
-        reply_markup=get_back_keyboard(),
+        reply_markup=get_neuro_keyboard(),
     )
     await callback.answer()
 
@@ -79,9 +81,29 @@ async def neuro_chat(message: Message, state: FSMContext):
         async with show_typing(message):
             chat = await user_manager.chat(str(message.from_user.id), message.text or "")
         if chat is None or not chat.response:
-            await message.answer(CHAT_ERROR_ANSWER, reply_markup=get_back_keyboard())
+            await message.answer(CHAT_ERROR_ANSWER, reply_markup=get_neuro_keyboard())
             return
 
-        await message.answer(chat.response, reply_markup=get_back_keyboard())
+        await message.answer(chat.response, reply_markup=get_neuro_keyboard())
     except Exception:
-        await message.answer(CHAT_ERROR_ANSWER, reply_markup=get_back_keyboard())
+        await message.answer(CHAT_ERROR_ANSWER, reply_markup=get_neuro_keyboard())
+
+
+@users_router.callback_query(F.data == "clear_context")
+async def clear_context(callback: types.CallbackQuery, state: FSMContext):
+    user_manager = UserManager()
+    cleared = await user_manager.clear_chat(str(callback.from_user.id))
+    if not cleared:
+        await callback.message.answer(
+            CLEAR_CONTEXT_ERROR_ANSWER,
+            reply_markup=get_neuro_keyboard(),
+        )
+        await callback.answer()
+        return
+
+    await state.set_state(NeuroStates.waiting_prompt)
+    await callback.message.answer(
+        CLEAR_CONTEXT_OK_ANSWER,
+        reply_markup=get_neuro_keyboard(),
+    )
+    await callback.answer()

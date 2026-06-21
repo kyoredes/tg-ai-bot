@@ -158,3 +158,23 @@ func (s *TelegramService) Chat(telegramID, prompt string) (*dto.TelegramChatResp
 		Response:   aiResp.GetResponse(),
 	}, nil
 }
+
+func (s *TelegramService) ClearChatHistory(telegramID string) error {
+	logger := logging.Logger
+
+	if _, err := s.GetProfile(telegramID); err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
+	defer cancel()
+
+	_, err := s.clients.AI.ClearChatHistory(ctx, &aiv1.ClearChatHistoryRequest{
+		TelegramId: telegramID,
+	})
+	if err != nil {
+		logger.Error("ai service grpc ClearChatHistory failed", zap.Error(err))
+		return exceptions.ErrResponseExternalService
+	}
+	return nil
+}

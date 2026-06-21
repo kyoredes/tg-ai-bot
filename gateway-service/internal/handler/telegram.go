@@ -143,3 +143,33 @@ func (h *TelegramHandler) Chat(c *gin.Context) {
 		"chat":   chat,
 	})
 }
+
+func (h *TelegramHandler) ClearChat(c *gin.Context) {
+	logger := logging.Logger
+
+	var request dto.TelegramUserDTO
+	if err := c.ShouldBindJSON(&request); err != nil {
+		logger.Debug("Wrong request", zap.Error(err))
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Wrong request",
+		})
+		return
+	}
+
+	if err := h.telegramService.ClearChatHistory(request.TelegramID); err != nil {
+		if errors.Is(err, exceptions.ErrUserNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "User not found",
+			})
+			return
+		}
+		logger.Error("Error clearing telegram chat history", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Error clearing chat history",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"status": "ok",
+	})
+}
