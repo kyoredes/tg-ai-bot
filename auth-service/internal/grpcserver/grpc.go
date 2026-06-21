@@ -3,6 +3,7 @@ package grpcserver
 import (
 	"auth/internal/config"
 	"auth/internal/logging"
+	"auth/internal/ratelimit"
 	"fmt"
 	"net"
 
@@ -18,13 +19,19 @@ type Server struct {
 	lis    net.Listener
 }
 
-func NewServer(cfg *config.GRPCConfig, authServer *AuthServer) (*Server, error) {
+func NewServer(cfg *config.GRPCConfig, throttleCfg *config.ThrottleConfig, authServer *AuthServer) (*Server, error) {
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Host, cfg.Port))
 	if err != nil {
 		return nil, err
 	}
 
-	s := grpc.NewServer()
+	opts := []grpc.ServerOption{}
+	if throttleCfg.Enabled {
+		limiter := ratelimit.New(throttleCfg.Limit, throttleCfg.Window)
+		opts = append(opts, grpc.UnaryInterceptor(ratelimit.UnaryServerInterceptor(limiter)))
+	}
+
+	s := grpc.NewServer(opts...)
 	authv1.RegisterAuthServiceServer(s, authServer)
 
 	return &Server{

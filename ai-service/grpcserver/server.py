@@ -2,15 +2,21 @@ import logging
 
 import grpc
 
+from config.throttle import throttle_settings
 from grpcserver.admin import AdminService
 from llm.errors import LLMUserFacingError
 from llm.manager import LLMManager
+from ratelimit.limiter import SlidingWindowLimiter
 from rpc.ai.v1 import ai_pb2, ai_pb2_grpc
 from utils.response import is_invalid_llm_response
 
 logger = logging.getLogger(__name__)
 
 _admin_service = AdminService()
+_chat_limiter = SlidingWindowLimiter(
+    throttle_settings.CHAT_LIMIT,
+    throttle_settings.CHAT_WINDOW_SECONDS,
+)
 
 
 class AIServer(ai_pb2_grpc.AIServiceServicer):
@@ -22,6 +28,12 @@ class AIServer(ai_pb2_grpc.AIServiceServicer):
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             context.set_details("telegram_id and prompt are required")
             return ai_pb2.ChatResponse()
+
+        if throttle_settings.ENABLED and not _chat_limiter.allow(f"chat:{telegram_id}"):
+            await context.abort(
+                grpc.StatusCode.RESOURCE_EXHAUSTED,
+                "rate limit exceeded",
+            )
 
         try:
             manager = LLMManager(session_id=telegram_id)

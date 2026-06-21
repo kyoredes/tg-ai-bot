@@ -34,6 +34,7 @@ func main() {
 	aiConfig := config.NewAIConfig()
 	devConfig := config.NewDevConfig()
 	adminConfig := config.NewAdminConfig()
+	throttleConfig := config.NewThrottleConfig()
 
 	if err := logging.InitLogger(cfg.LoggingMode); err != nil {
 		fmt.Println(err)
@@ -60,7 +61,18 @@ func main() {
 	serverAuthMiddleware := middleware.DevAuthMiddleware(devConfig)
 	adminAuthMiddleware := middleware.AdminAuthMiddleware(adminService)
 	corsMiddleware := middleware.CORSMiddleware(adminConfig.CORSOrigin)
-	router := router.SetupRouter(h, serverAuthMiddleware, adminAuthMiddleware, corsMiddleware)
+	throttleMiddleware := middleware.ThrottleMiddleware(throttleConfig)
+	chatThrottleMiddleware := middleware.TelegramChatThrottleMiddleware(throttleConfig)
+	loginThrottleMiddleware := middleware.AdminLoginThrottleMiddleware(throttleConfig)
+	router := router.SetupRouter(
+		h,
+		serverAuthMiddleware,
+		adminAuthMiddleware,
+		corsMiddleware,
+		throttleMiddleware,
+		chatThrottleMiddleware,
+		loginThrottleMiddleware,
+	)
 
 	srv, err := server.NewServer(cfg, router)
 	if err != nil {

@@ -27,6 +27,7 @@ func main() {
 	config.Init()
 	cfg := config.NewConfig()
 	grpcCfg := config.NewGRPCConfig()
+	throttleCfg := config.NewThrottleConfig()
 	dbConfig := config.NewDBConfig()
 	redisConfig := config.NewRedisConfig()
 	ctx := context.Background()
@@ -62,7 +63,7 @@ func main() {
 	healthService := service.NewHealthService(userRepo, redisClient)
 
 	grpcAuthServer := grpcserver.NewAuthServer(authService, adminService, healthService)
-	grpcSrv, err := grpcserver.NewServer(grpcCfg, grpcAuthServer)
+	grpcSrv, err := grpcserver.NewServer(grpcCfg, throttleCfg, grpcAuthServer)
 	if err != nil {
 		logger.Fatal("failed to create gRPC server", zap.Error(err))
 	}

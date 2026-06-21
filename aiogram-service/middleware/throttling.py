@@ -1,8 +1,10 @@
 import time
 from collections import defaultdict, deque
+from typing import Any
+
 from aiogram import BaseMiddleware
-from aiogram.types import Message
 from aiogram.dispatcher.event.bases import SkipHandler
+from aiogram.types import CallbackQuery, Message, TelegramObject
 
 
 class ThrottlingMiddleware(BaseMiddleware):
@@ -16,31 +18,48 @@ class ThrottlingMiddleware(BaseMiddleware):
         self.limit_seconds = limit_seconds
         self.ban_seconds = ban_seconds
 
-        self.user_message_times = defaultdict(lambda: deque())
-        self.banned_users = {}  # user_id: ban_until_time
+        self.user_message_times: dict[int, deque[float]] = defaultdict(deque)
+        self.banned_users: dict[int, float] = {}
 
-    async def __call__(self, handler, event: Message, data: dict):
-        user_id = event.from_user.id
+    def _user_id(self, event: TelegramObject) -> int | None:
+        user = getattr(event, "from_user", None)
+        if user is None:
+            return None
+        return user.id
+
+    async def __call__(
+        self,
+        handler,
+        event: TelegramObject,
+        data: dict[str, Any],
+    ):
+        user_id = self._user_id(event)
+        if user_id is None:
+            return await handler(event, data)
+
         now = time.monotonic()
 
-        # проверка на бан
         ban_until = self.banned_users.get(user_id)
         if ban_until and now < ban_until:
-            await event.answer("🚫 Ты временно забанен за спам. Подожди немного.")
+            await self._notify(event, "🚫 Ты временно забанен за спам. Подожди немного.")
             raise SkipHandler()
 
         times = self.user_message_times[user_id]
         times.append(now)
 
-        # очищаем старые события
         while times and now - times[0] > self.limit_seconds:
             times.popleft()
 
         if len(times) > self.limit_count:
-            # баним пользователя
             self.banned_users[user_id] = now + self.ban_seconds
-            await event.answer("🚫 Слишком много сообщений! Ты временно забанен.")
+            await self._notify(event, "🚫 Слишком много сообщений! Ты временно забанен.")
             raise SkipHandler()
 
-        # пропускаем к следующему хендлеру
         return await handler(event, data)
+
+    @staticmethod
+    async def _notify(event: TelegramObject, text: str) -> None:
+        if isinstance(event, Message):
+            await event.answer(text)
+        elif isinstance(event, CallbackQuery):
+            await event.answer(text, show_alert=True)

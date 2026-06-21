@@ -23,6 +23,20 @@ type GRPCConfig struct {
 	Port string
 }
 
+type ThrottleConfig struct {
+	Enabled bool
+	Limit   int
+	Window  time.Duration
+}
+
+func NewThrottleConfig() *ThrottleConfig {
+	return &ThrottleConfig{
+		Enabled: viper.GetBool("THROTTLE_ENABLED"),
+		Limit:   viper.GetInt("THROTTLE_LIMIT"),
+		Window:  viper.GetDuration("THROTTLE_WINDOW"),
+	}
+}
+
 func NewGRPCConfig() *GRPCConfig {
 	host := viper.GetString("GRPC_HOST")
 	port := viper.GetString("GRPC_PORT")
@@ -107,4 +121,8 @@ func Init() {
 	viper.SetDefault("REFRESH_TOKEN_EXPIRATION", 86400)
 	viper.SetDefault("TIMEOUT", "5s")
 	viper.SetDefault("DB_SSL", "require")
+
+	viper.SetDefault("THROTTLE_ENABLED", true)
+	viper.SetDefault("THROTTLE_LIMIT", 300)
+	viper.SetDefault("THROTTLE_WINDOW", "60s")
 }

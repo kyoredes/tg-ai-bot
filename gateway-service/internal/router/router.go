@@ -11,20 +11,23 @@ func SetupRouter(
 	authMiddleware gin.HandlerFunc,
 	adminAuthMiddleware gin.HandlerFunc,
 	corsMiddleware gin.HandlerFunc,
+	throttleMiddleware gin.HandlerFunc,
+	chatThrottleMiddleware gin.HandlerFunc,
+	loginThrottleMiddleware gin.HandlerFunc,
 ) *gin.Engine {
 	router := gin.Default()
-	router.Use(corsMiddleware)
+	router.Use(corsMiddleware, throttleMiddleware)
 
 	tg := router.Group("/telegram")
 	tg.Use(authMiddleware)
 	tg.POST("/start", h.Telegram.StartTelegram)
 	tg.POST("/profile", h.Telegram.GetProfile)
 	tg.POST("/subscription", h.Telegram.GetSubscription)
-	tg.POST("/chat", h.Telegram.Chat)
+	tg.POST("/chat", chatThrottleMiddleware, h.Telegram.Chat)
 	tg.POST("/chat/clear", h.Telegram.ClearChat)
 
 	admin := router.Group("/admin")
-	admin.POST("/login", h.Admin.Login)
+	admin.POST("/login", loginThrottleMiddleware, h.Admin.Login)
 
 	protected := admin.Group("")
 	protected.Use(adminAuthMiddleware)

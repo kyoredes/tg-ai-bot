@@ -25,6 +25,7 @@ func main() {
 	config.Init()
 	cfg := config.NewConfig()
 	grpcCfg := config.NewGRPCConfig()
+	throttleCfg := config.NewThrottleConfig()
 
 	if err := logging.InitLogger(cfg.LoggingMode); err != nil {
 		fmt.Println(err)
@@ -49,7 +50,7 @@ func main() {
 	healthService := service.NewHealthService(subscriptionRepo)
 
 	grpcSubServer := grpcserver.NewSubscriptionServer(subscriptionService, adminService, healthService)
-	grpcSrv, err := grpcserver.NewServer(grpcCfg, grpcSubServer)
+	grpcSrv, err := grpcserver.NewServer(grpcCfg, throttleCfg, grpcSubServer)
 	if err != nil {
 		logger.Fatal("failed to create gRPC server", zap.Error(err))
 	}

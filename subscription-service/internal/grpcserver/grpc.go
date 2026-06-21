@@ -5,6 +5,7 @@ import (
 	"net"
 	"subscription/internal/config"
 	"subscription/internal/logging"
+	"subscription/internal/ratelimit"
 
 	subscriptionv1 "agrobot/proto/gen/go/subscription/v1"
 
@@ -18,13 +19,19 @@ type Server struct {
 	lis    net.Listener
 }
 
-func NewServer(cfg *config.GRPCConfig, subscriptionServer *SubscriptionServer) (*Server, error) {
+func NewServer(cfg *config.GRPCConfig, throttleCfg *config.ThrottleConfig, subscriptionServer *SubscriptionServer) (*Server, error) {
 	lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.Host, cfg.Port))
 	if err != nil {
 		return nil, err
 	}
 
-	s := grpc.NewServer()
+	opts := []grpc.ServerOption{}
+	if throttleCfg.Enabled {
+		limiter := ratelimit.New(throttleCfg.Limit, throttleCfg.Window)
+		opts = append(opts, grpc.UnaryInterceptor(ratelimit.UnaryServerInterceptor(limiter)))
+	}
+
+	s := grpc.NewServer(opts...)
 	subscriptionv1.RegisterSubscriptionServiceServer(s, subscriptionServer)
 
 	return &Server{

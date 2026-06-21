@@ -77,6 +77,28 @@ type AdminConfig struct {
 	CORSOrigin string
 }
 
+type ThrottleConfig struct {
+	Enabled     bool
+	Limit       int
+	Window      time.Duration
+	ChatLimit   int
+	ChatWindow  time.Duration
+	LoginLimit  int
+	LoginWindow time.Duration
+}
+
+func NewThrottleConfig() *ThrottleConfig {
+	return &ThrottleConfig{
+		Enabled:     viper.GetBool("THROTTLE_ENABLED"),
+		Limit:       viper.GetInt("THROTTLE_LIMIT"),
+		Window:      viper.GetDuration("THROTTLE_WINDOW"),
+		ChatLimit:   viper.GetInt("THROTTLE_CHAT_LIMIT"),
+		ChatWindow:  viper.GetDuration("THROTTLE_CHAT_WINDOW"),
+		LoginLimit:  viper.GetInt("THROTTLE_LOGIN_LIMIT"),
+		LoginWindow: viper.GetDuration("THROTTLE_LOGIN_WINDOW"),
+	}
+}
+
 func NewAdminConfig() *AdminConfig {
 	return &AdminConfig{
 		Username:   viper.GetString("ADMIN_USERNAME"),
@@ -92,6 +114,14 @@ func Init() {
 	viper.SetDefault("PORT", "8000")
 	viper.SetDefault("LOGGING_MODE", "text")
 	viper.SetDefault("TIMEOUT", "120s")
+
+	viper.SetDefault("THROTTLE_ENABLED", true)
+	viper.SetDefault("THROTTLE_LIMIT", 120)
+	viper.SetDefault("THROTTLE_WINDOW", "60s")
+	viper.SetDefault("THROTTLE_CHAT_LIMIT", 10)
+	viper.SetDefault("THROTTLE_CHAT_WINDOW", "60s")
+	viper.SetDefault("THROTTLE_LOGIN_LIMIT", 10)
+	viper.SetDefault("THROTTLE_LOGIN_WINDOW", "60s")
 
 	viper.SetDefault("AUTH_HOST", "localhost")
 	viper.SetDefault("AUTH_GRPC_PORT", "50051")

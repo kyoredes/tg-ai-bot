@@ -67,6 +67,9 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-dev-jwt-secret-key-change-in-prod!!}
       ACCESS_TOKEN_EXPIRATION: 3600
       REFRESH_TOKEN_EXPIRATION: 86400
+      THROTTLE_ENABLED: ${THROTTLE_ENABLED:-true}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-300}
+      THROTTLE_WINDOW: ${THROTTLE_WINDOW:-60s}
     depends_on:
       auth-db:
         condition: service_healthy
@@ -91,6 +94,9 @@ services:
       DB_PASSWORD: postgres
       DB_NAME: sub
       DB_SSL: disable
+      THROTTLE_ENABLED: ${THROTTLE_ENABLED:-true}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-300}
+      THROTTLE_WINDOW: ${THROTTLE_WINDOW:-60s}
     depends_on:
       sub-db:
         condition: service_healthy
@@ -120,6 +126,13 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
       ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:-admin-jwt-secret-change-in-prod}
       ADMIN_CORS_ORIGIN: ${ADMIN_CORS_ORIGIN:-http://localhost:3000}
+      THROTTLE_ENABLED: ${THROTTLE_ENABLED:-true}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-120}
+      THROTTLE_WINDOW: ${THROTTLE_WINDOW:-60s}
+      THROTTLE_CHAT_LIMIT: ${THROTTLE_CHAT_LIMIT:-10}
+      THROTTLE_CHAT_WINDOW: ${THROTTLE_CHAT_WINDOW:-60s}
+      THROTTLE_LOGIN_LIMIT: ${THROTTLE_LOGIN_LIMIT:-10}
+      THROTTLE_LOGIN_WINDOW: ${THROTTLE_LOGIN_WINDOW:-60s}
     depends_on:
       - auth-service
       - subscription-service
@@ -152,6 +165,11 @@ services:
       LITELLM_CUSTOM_PROVIDER: ${LITELLM_CUSTOM_PROVIDER:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      THROTTLE_ENABLED: ${THROTTLE_ENABLED:-true}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-300}
+      THROTTLE_WINDOW_SECONDS: ${THROTTLE_WINDOW_SECONDS:-60}
+      THROTTLE_CHAT_LIMIT: ${THROTTLE_CHAT_LIMIT:-10}
+      THROTTLE_CHAT_WINDOW_SECONDS: ${THROTTLE_CHAT_WINDOW_SECONDS:-60}
     depends_on:
       redis:
         condition: service_healthy
@@ -171,6 +189,10 @@ services:
       COMMON_PUB_KEY: ${COMMON_PUB_KEY:-secret}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       HTTP_TIMEOUT: ${HTTP_TIMEOUT:-120}
+      THROTTLE_ENABLED: ${THROTTLE_ENABLED:-true}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT:-5}
+      THROTTLE_WINDOW: ${THROTTLE_WINDOW:-5}
+      THROTTLE_BAN_SECONDS: ${THROTTLE_BAN_SECONDS:-100}
     depends_on:
       - gateway-service
 

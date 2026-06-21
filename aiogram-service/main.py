@@ -14,7 +14,16 @@ logging.basicConfig(level=LOG_LEVEL)
 
 bot = Bot(token=settings.BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
-dp.message.middleware(ThrottlingMiddleware())
+
+if settings.THROTTLE_ENABLED:
+    throttling = ThrottlingMiddleware(
+        limit_count=settings.THROTTLE_LIMIT,
+        limit_seconds=settings.THROTTLE_WINDOW,
+        ban_seconds=settings.THROTTLE_BAN_SECONDS,
+    )
+    dp.message.middleware(throttling)
+    dp.callback_query.middleware(throttling)
+
 dp.include_router(main_router)
 dp.include_router(users_router)
 

@@ -5,14 +5,27 @@ import signal
 import grpc
 
 from config.settings import Settings
+from config.throttle import throttle_settings
 from grpcserver.server import AIServer
+from ratelimit.interceptor import RateLimitInterceptor
+from ratelimit.limiter import SlidingWindowLimiter
 from rpc.ai.v1 import ai_pb2_grpc
 
 
 class Server:
     def __init__(self, settings: Settings):
         self._settings = settings
-        self._grpc_server = grpc.aio.server()
+        interceptors = []
+        if throttle_settings.ENABLED:
+            interceptors.append(
+                RateLimitInterceptor(
+                    SlidingWindowLimiter(
+                        throttle_settings.LIMIT,
+                        throttle_settings.WINDOW_SECONDS,
+                    ),
+                ),
+            )
+        self._grpc_server = grpc.aio.server(interceptors=interceptors)
 
     async def run(self) -> None:
         logging.basicConfig(level=self._settings.LOG_LEVEL)
