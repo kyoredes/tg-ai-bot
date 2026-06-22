@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-from g4f.Provider import OperaAria, RetryProvider, Yqcloud
+from g4f.Provider import Blackbox, Gemini, OperaAria, RetryProvider, Yqcloud
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,8 +25,9 @@ G4F_FALLBACK_MODELS: tuple[G4FModelConfig, ...] = (
         provider=RetryProvider([Yqcloud, OperaAria], shuffle=False),
     ),
     G4FModelConfig("gpt-4", "Yqcloud", provider=Yqcloud),
+    G4FModelConfig("", "Blackbox", provider=Blackbox),
+    G4FModelConfig("", "Gemini", provider=Gemini),
     G4FModelConfig("", "Opera Aria", provider=OperaAria),
-    G4FModelConfig("gpt-4", "Yqcloud retry", provider=Yqcloud),
 )
 
 G4F_MODELS: tuple[G4FModelConfig, ...] = G4F_FALLBACK_MODELS

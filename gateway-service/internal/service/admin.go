@@ -113,6 +113,16 @@ func (s *AdminService) GetStats() (*dto.AdminStats, error) {
 		return nil
 	})
 
+	g.Go(func() error {
+		resp, err := s.clients.AI.ListProfileRoastSessions(gctx, &aiv1.ListProfileRoastSessionsRequest{Page: 1, Limit: 1})
+		if err != nil {
+			logging.Logger.Error("ai ListProfileRoastSessions failed", zap.Error(err))
+			return exceptions.ErrResponseExternalService
+		}
+		stats.ProfileRoasts.Sessions = resp.GetTotal()
+		return nil
+	})
+
 	if err := g.Wait(); err != nil {
 		return nil, err
 	}
@@ -308,6 +318,70 @@ func (s *AdminService) ClearChatHistory(telegramID string) error {
 	_, err := s.clients.AI.ClearChatHistory(ctx, &aiv1.ClearChatHistoryRequest{TelegramId: telegramID})
 	if err != nil {
 		logging.Logger.Error("ai ClearChatHistory failed", zap.Error(err))
+		return exceptions.ErrResponseExternalService
+	}
+	return nil
+}
+
+func (s *AdminService) ListProfileRoastSessions(page, limit int) (*dto.ProfileRoastSessionList, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
+	defer cancel()
+
+	resp, err := s.clients.AI.ListProfileRoastSessions(ctx, &aiv1.ListProfileRoastSessionsRequest{
+		Page:  int32(page),
+		Limit: int32(limit),
+	})
+	if err != nil {
+		logging.Logger.Error("ai ListProfileRoastSessions failed", zap.Error(err))
+		return nil, exceptions.ErrResponseExternalService
+	}
+
+	sessions := make([]dto.ProfileRoastSession, len(resp.GetSessions()))
+	for i, session := range resp.GetSessions() {
+		sessions[i] = dto.ProfileRoastSession{
+			TelegramID: session.GetTelegramId(),
+			RoastCount: session.GetRoastCount(),
+		}
+	}
+
+	return &dto.ProfileRoastSessionList{Sessions: sessions, Total: resp.GetTotal()}, nil
+}
+
+func (s *AdminService) GetProfileRoastHistory(telegramID string) (*dto.ProfileRoastHistory, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
+	defer cancel()
+
+	resp, err := s.clients.AI.GetProfileRoastHistory(ctx, &aiv1.GetProfileRoastHistoryRequest{TelegramId: telegramID})
+	if err != nil {
+		logging.Logger.Error("ai GetProfileRoastHistory failed", zap.Error(err))
+		return nil, exceptions.ErrResponseExternalService
+	}
+
+	roasts := make([]dto.ProfileRoastItem, len(resp.GetRoasts()))
+	for i, roast := range resp.GetRoasts() {
+		roasts[i] = dto.ProfileRoastItem{
+			CreatedAt:    roast.GetCreatedAt(),
+			FirstName:    roast.GetFirstName(),
+			LastName:     roast.GetLastName(),
+			Username:     roast.GetUsername(),
+			Bio:          roast.GetBio(),
+			IsPremium:    roast.GetIsPremium(),
+			LanguageCode: roast.GetLanguageCode(),
+			HasPhoto:     roast.GetHasPhoto(),
+			Response:     roast.GetResponse(),
+		}
+	}
+
+	return &dto.ProfileRoastHistory{TelegramID: resp.GetTelegramId(), Roasts: roasts}, nil
+}
+
+func (s *AdminService) ClearProfileRoastHistory(telegramID string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
+	defer cancel()
+
+	_, err := s.clients.AI.ClearProfileRoastHistory(ctx, &aiv1.ClearProfileRoastHistoryRequest{TelegramId: telegramID})
+	if err != nil {
+		logging.Logger.Error("ai ClearProfileRoastHistory failed", zap.Error(err))
 		return exceptions.ErrResponseExternalService
 	}
 	return nil

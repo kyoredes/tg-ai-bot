@@ -8,11 +8,14 @@ from users.answers import (
     CHAT_ERROR_ANSWER,
     CLEAR_CONTEXT_ERROR_ANSWER,
     CLEAR_CONTEXT_OK_ANSWER,
+    PROFILE_ROAST_ERROR_ANSWER,
+    PROFILE_ROAST_PROGRESS_ANSWER,
     get_profile_info_answer,
     get_subscription_info_answer,
 )
 from users.manager import UserManager
 from users.states import NeuroStates
+from services.telegram_profile import collect_profile_snapshot
 
 users_router = Router(name="users")
 
@@ -62,6 +65,34 @@ async def get_subscription(callback: types.CallbackQuery):
         reply_markup=get_back_keyboard(),
     )
     await callback.answer()
+
+
+@users_router.callback_query(F.data == "profile_roast")
+async def profile_roast(callback: types.CallbackQuery):
+    await callback.answer()
+    status_message = None
+    try:
+        status_message = await callback.message.answer(PROFILE_ROAST_PROGRESS_ANSWER)
+        user_manager = UserManager()
+        snapshot = await collect_profile_snapshot(callback.bot, callback.from_user)
+        accepted = await user_manager.enqueue_profile_analyze(
+            str(callback.from_user.id),
+            snapshot,
+            chat_id=callback.message.chat.id,
+            progress_message_id=status_message.message_id,
+        )
+        if accepted is None:
+            raise RuntimeError("profile analyze enqueue failed")
+    except Exception:
+        if status_message is not None:
+            try:
+                await status_message.delete()
+            except Exception:
+                pass
+        await callback.message.answer(
+            PROFILE_ROAST_ERROR_ANSWER,
+            reply_markup=get_back_keyboard(),
+        )
 
 
 @users_router.callback_query(F.data == "neuro")

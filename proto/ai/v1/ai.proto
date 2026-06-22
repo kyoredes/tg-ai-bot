@@ -6,9 +6,13 @@ option go_package = "agrobot/proto/gen/go/ai/v1;aiv1";
 
 service AIService {
   rpc Chat(ChatRequest) returns (ChatResponse);
+  rpc AnalyzeProfile(AnalyzeProfileRequest) returns (AnalyzeProfileResponse);
   rpc GetChatHistory(GetChatHistoryRequest) returns (GetChatHistoryResponse);
   rpc ClearChatHistory(ClearChatHistoryRequest) returns (ClearChatHistoryResponse);
   rpc ListChatSessions(ListChatSessionsRequest) returns (ListChatSessionsResponse);
+  rpc GetProfileRoastHistory(GetProfileRoastHistoryRequest) returns (GetProfileRoastHistoryResponse);
+  rpc ClearProfileRoastHistory(ClearProfileRoastHistoryRequest) returns (ClearProfileRoastHistoryResponse);
+  rpc ListProfileRoastSessions(ListProfileRoastSessionsRequest) returns (ListProfileRoastSessionsResponse);
   rpc GetLLMConfig(GetLLMConfigRequest) returns (GetLLMConfigResponse);
   rpc GetSystemPrompt(GetSystemPromptRequest) returns (GetSystemPromptResponse);
   rpc UpdateSystemPrompt(UpdateSystemPromptRequest) returns (UpdateSystemPromptResponse);
@@ -21,6 +25,22 @@ message ChatRequest {
 }
 
 message ChatResponse {
+  string telegram_id = 1;
+  string response = 2;
+}
+
+message AnalyzeProfileRequest {
+  string telegram_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string username = 4;
+  string bio = 5;
+  bool is_premium = 6;
+  string language_code = 7;
+  string photo_base64 = 8;
+}
+
+message AnalyzeProfileResponse {
   string telegram_id = 1;
   string response = 2;
 }
@@ -57,6 +77,48 @@ message ChatSessionItem {
 
 message ListChatSessionsResponse {
   repeated ChatSessionItem sessions = 1;
+  int32 total = 2;
+}
+
+message ProfileRoastItem {
+  int64 created_at = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string username = 4;
+  string bio = 5;
+  bool is_premium = 6;
+  string language_code = 7;
+  bool has_photo = 8;
+  string response = 9;
+}
+
+message GetProfileRoastHistoryRequest {
+  string telegram_id = 1;
+}
+
+message GetProfileRoastHistoryResponse {
+  string telegram_id = 1;
+  repeated ProfileRoastItem roasts = 2;
+}
+
+message ClearProfileRoastHistoryRequest {
+  string telegram_id = 1;
+}
+
+message ClearProfileRoastHistoryResponse {}
+
+message ListProfileRoastSessionsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+message ProfileRoastSessionItem {
+  string telegram_id = 1;
+  int32 roast_count = 2;
+}
+
+message ListProfileRoastSessionsResponse {
+  repeated ProfileRoastSessionItem sessions = 1;
   int32 total = 2;
 }
 

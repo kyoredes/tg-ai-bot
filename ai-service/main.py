@@ -2,10 +2,15 @@ import asyncio
 
 from config.settings import settings
 from grpcserver.grpc import Server
+from kafka.profile_worker import ProfileAnalyzeWorker
 
 
 async def main() -> None:
-    await Server(settings).run()
+    worker = ProfileAnalyzeWorker()
+    await asyncio.gather(
+        Server(settings).run(),
+        worker.run(),
+    )
 
 
 if __name__ == "__main__":

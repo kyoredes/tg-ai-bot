@@ -3,6 +3,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class LiteLLMSettings(BaseSettings):
     MODEL: str = "gpt-3.5-turbo"
+    PROFILE_MODEL: str = "gpt-4o-mini"
     TEMPERATURE: float = 0.2
     MAX_TOKENS: int = 3000
     API_KEY: str = ""

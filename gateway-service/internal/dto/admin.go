@@ -70,6 +70,33 @@ type ChatSessionList struct {
 	Total    int32         `json:"total"`
 }
 
+type ProfileRoastItem struct {
+	CreatedAt    int64  `json:"createdAt"`
+	FirstName    string `json:"firstName"`
+	LastName     string `json:"lastName,omitempty"`
+	Username     string `json:"username,omitempty"`
+	Bio          string `json:"bio,omitempty"`
+	IsPremium    bool   `json:"isPremium"`
+	LanguageCode string `json:"languageCode,omitempty"`
+	HasPhoto     bool   `json:"hasPhoto"`
+	Response     string `json:"response"`
+}
+
+type ProfileRoastHistory struct {
+	TelegramID string             `json:"telegramID"`
+	Roasts     []ProfileRoastItem `json:"roasts"`
+}
+
+type ProfileRoastSession struct {
+	TelegramID string `json:"telegramID"`
+	RoastCount int32  `json:"roastCount"`
+}
+
+type ProfileRoastSessionList struct {
+	Sessions []ProfileRoastSession `json:"sessions"`
+	Total    int32                 `json:"total"`
+}
+
 type LLMConfig struct {
 	Model       string   `json:"model"`
 	Temperature float64  `json:"temperature"`
@@ -103,6 +130,9 @@ type AdminStats struct {
 	Chat struct {
 		Sessions int32 `json:"sessions"`
 	} `json:"chat"`
+	ProfileRoasts struct {
+		Sessions int32 `json:"sessions"`
+	} `json:"profileRoasts"`
 }
 
 type ServiceStatus struct {

@@ -5,7 +5,9 @@ import grpc
 from config.throttle import throttle_settings
 from grpcserver.admin import AdminService
 from llm.errors import LLMUserFacingError
+from llm.history.profile_roast_store import ProfileRoastStore, build_profile_roast_entry
 from llm.manager import LLMManager
+from llm.profile_analyzer import ProfileData
 from ratelimit.limiter import SlidingWindowLimiter
 from rpc.ai.v1 import ai_pb2, ai_pb2_grpc
 from utils.response import is_invalid_llm_response
@@ -17,6 +19,24 @@ _chat_limiter = SlidingWindowLimiter(
     throttle_settings.CHAT_LIMIT,
     throttle_settings.CHAT_WINDOW_SECONDS,
 )
+_profile_limiter = SlidingWindowLimiter(
+    throttle_settings.PROFILE_LIMIT,
+    throttle_settings.PROFILE_WINDOW_SECONDS,
+)
+
+
+async def _save_profile_roast(telegram_id: str, profile: ProfileData, response: str) -> None:
+    store = ProfileRoastStore(telegram_id)
+    if not await store.ping():
+        return
+    try:
+        await store.append(build_profile_roast_entry(profile, response))
+    except Exception as exc:
+        logger.error(
+            "Failed to save profile roast for telegram_id=%s: %s",
+            telegram_id,
+            exc,
+        )
 
 
 class AIServer(ai_pb2_grpc.AIServiceServicer):
@@ -65,6 +85,33 @@ class AIServer(ai_pb2_grpc.AIServiceServicer):
             response=response,
         )
 
+    async def AnalyzeProfile(self, request, context):
+        from llm.profile_service import run_profile_analysis
+
+        telegram_id = request.telegram_id.strip()
+        first_name = request.first_name.strip()
+
+        if not telegram_id or not first_name:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details("telegram_id and first_name are required")
+            return ai_pb2.AnalyzeProfileResponse()
+
+        profile = ProfileData(
+            first_name=first_name,
+            last_name=request.last_name.strip(),
+            username=request.username.strip(),
+            bio=request.bio.strip(),
+            is_premium=request.is_premium,
+            language_code=request.language_code.strip(),
+            photo_base64=request.photo_base64.strip(),
+        )
+
+        response = await run_profile_analysis(telegram_id, profile)
+        return ai_pb2.AnalyzeProfileResponse(
+            telegram_id=telegram_id,
+            response=response,
+        )
+
     async def GetChatHistory(self, request, context):
         telegram_id = request.telegram_id.strip()
         if not telegram_id:
@@ -101,6 +148,58 @@ class AIServer(ai_pb2_grpc.AIServiceServicer):
                 ai_pb2.ChatSessionItem(
                     telegram_id=s["telegram_id"],
                     message_count=s["message_count"],
+                )
+                for s in sessions
+            ],
+            total=total,
+        )
+
+    async def GetProfileRoastHistory(self, request, context):
+        telegram_id = request.telegram_id.strip()
+        if not telegram_id:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details("telegram_id is required")
+            return ai_pb2.GetProfileRoastHistoryResponse()
+
+        roasts = await _admin_service.get_profile_roast_history(telegram_id)
+        return ai_pb2.GetProfileRoastHistoryResponse(
+            telegram_id=telegram_id,
+            roasts=[
+                ai_pb2.ProfileRoastItem(
+                    created_at=r["created_at"],
+                    first_name=r.get("first_name", ""),
+                    last_name=r.get("last_name", ""),
+                    username=r.get("username", ""),
+                    bio=r.get("bio", ""),
+                    is_premium=r.get("is_premium", False),
+                    language_code=r.get("language_code", ""),
+                    has_photo=r.get("has_photo", False),
+                    response=r.get("response", ""),
+                )
+                for r in roasts
+            ],
+        )
+
+    async def ClearProfileRoastHistory(self, request, context):
+        telegram_id = request.telegram_id.strip()
+        if not telegram_id:
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            context.set_details("telegram_id is required")
+            return ai_pb2.ClearProfileRoastHistoryResponse()
+
+        await _admin_service.clear_profile_roast_history(telegram_id)
+        return ai_pb2.ClearProfileRoastHistoryResponse()
+
+    async def ListProfileRoastSessions(self, request, context):
+        sessions, total = await _admin_service.list_profile_roast_sessions(
+            request.page or 1,
+            request.limit or 20,
+        )
+        return ai_pb2.ListProfileRoastSessionsResponse(
+            sessions=[
+                ai_pb2.ProfileRoastSessionItem(
+                    telegram_id=s["telegram_id"],
+                    roast_count=s["roast_count"],
                 )
                 for s in sessions
             ],

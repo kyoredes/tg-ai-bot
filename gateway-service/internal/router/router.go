@@ -25,6 +25,7 @@ func SetupRouter(
 	tg.POST("/subscription", h.Telegram.GetSubscription)
 	tg.POST("/chat", chatThrottleMiddleware, h.Telegram.Chat)
 	tg.POST("/chat/clear", h.Telegram.ClearChat)
+	tg.POST("/profile/analyze", chatThrottleMiddleware, h.Telegram.AnalyzeProfile)
 
 	admin := router.Group("/admin")
 	admin.POST("/login", loginThrottleMiddleware, h.Admin.Login)
@@ -45,6 +46,11 @@ func SetupRouter(
 	chat.GET("/sessions", h.Admin.ListChatSessions)
 	chat.GET("/history/:telegramId", h.Admin.GetChatHistory)
 	chat.DELETE("/history/:telegramId", h.Admin.ClearChatHistory)
+
+	profileRoasts := protected.Group("/profile-roasts")
+	profileRoasts.GET("/sessions", h.Admin.ListProfileRoastSessions)
+	profileRoasts.GET("/history/:telegramId", h.Admin.GetProfileRoastHistory)
+	profileRoasts.DELETE("/history/:telegramId", h.Admin.ClearProfileRoastHistory)
 
 	llm := protected.Group("/llm")
 	llm.GET("", h.Admin.GetLLMConfig)

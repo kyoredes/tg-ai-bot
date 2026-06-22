@@ -1,27 +1,12 @@
 import httpx
 from config.core import settings
 import logging
-from users.schemas import ChatModel, ClientModel, SubscriptionModel, UserModel
+from users.schemas import ChatModel, ClientModel, ProfileAnalyzeAcceptedModel, ProfileSnapshot, SubscriptionModel, UserModel
+from utils.response import is_user_safe_response
 from contextlib import asynccontextmanager
 
 
 logger = logging.getLogger(__name__)
-
-
-def _is_user_safe_response(text: str) -> bool:
-    stripped = (text or "").strip()
-    if not stripped:
-        return False
-    lower = stripped.lower()
-    if stripped.startswith("data:") or "[done]" in lower:
-        return False
-    if stripped.startswith("<!DOCTYPE") or stripped.startswith("<html"):
-        return False
-    if '"type":"error"' in stripped or "authentication error" in lower:
-        return False
-    if "api key" in lower and "error" in lower:
-        return False
-    return True
 
 
 class UserManager:
@@ -155,7 +140,7 @@ class UserManager:
                     return None
                 chat = result.get("chat") or {}
                 response = chat.get("response", "")
-                if not _is_user_safe_response(response):
+                if not is_user_safe_response(response):
                     logger.error("Unsafe chat response for client %s", tg_id)
                     return None
                 return ChatModel(
@@ -164,6 +149,53 @@ class UserManager:
                 )
             except Exception as e:
                 logger.error("Error in chat %s: %s", tg_id, e)
+                return None
+
+    async def enqueue_profile_analyze(
+        self,
+        tg_id: str,
+        snapshot: ProfileSnapshot,
+        *,
+        chat_id: int,
+        progress_message_id: int,
+    ) -> ProfileAnalyzeAcceptedModel | None:
+        headers = await self._get_headers()
+        body = {
+            "telegramID": tg_id,
+            "chatID": chat_id,
+            "progressMessageID": progress_message_id,
+            "firstName": snapshot.first_name,
+            "lastName": snapshot.last_name,
+            "username": snapshot.username,
+            "bio": snapshot.bio,
+            "isPremium": snapshot.is_premium,
+            "languageCode": snapshot.language_code,
+            "photoBase64": snapshot.photo_base64 or "",
+        }
+        async with self._get_client() as client:
+            try:
+                response = await client.post(
+                    headers=headers,
+                    url=f"http://{self.backend_url}/telegram/profile/analyze",
+                    json=body,
+                    timeout=30.0,
+                )
+                if response.status_code != 202:
+                    logger.error(
+                        "Unable to enqueue profile analysis for client %s: status %s",
+                        tg_id,
+                        response.status_code,
+                    )
+                    return None
+                result = response.json()
+                if result.get("status") != "accepted":
+                    return None
+                job_id = result.get("jobId", "")
+                if not job_id:
+                    return None
+                return ProfileAnalyzeAcceptedModel(job_id=job_id)
+            except Exception as e:
+                logger.error("Error enqueueing profile analysis %s: %s", tg_id, e)
                 return None
 
     async def clear_chat(self, tg_id: str) -> bool:

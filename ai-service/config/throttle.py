@@ -7,6 +7,8 @@ class ThrottleSettings(BaseSettings):
     WINDOW_SECONDS: float = 60.0
     CHAT_LIMIT: int = 10
     CHAT_WINDOW_SECONDS: float = 60.0
+    PROFILE_LIMIT: int = 3
+    PROFILE_WINDOW_SECONDS: float = 3600.0
 
     model_config = SettingsConfigDict(
         env_prefix="THROTTLE_",

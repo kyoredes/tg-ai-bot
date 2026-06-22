@@ -3,6 +3,7 @@ import logging
 from config.core import settings
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
+from kafka.profile_results_consumer import consume_profile_results
 from middleware.throttling import ThrottlingMiddleware
 from core.routers import main_router
 from users.routers import users_router
@@ -29,7 +30,15 @@ dp.include_router(users_router)
 
 
 async def main():
-    await dp.start_polling(bot)
+    consumer_task = asyncio.create_task(consume_profile_results(bot))
+    try:
+        await dp.start_polling(bot)
+    finally:
+        consumer_task.cancel()
+        try:
+            await consumer_task
+        except asyncio.CancelledError:
+            pass
 
 
 if __name__ == "__main__":

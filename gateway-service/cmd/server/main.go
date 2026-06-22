@@ -7,6 +7,7 @@ import (
 	"gateway/internal/client"
 	"gateway/internal/config"
 	"gateway/internal/handler"
+	"gateway/internal/kafka"
 	"gateway/internal/logging"
 	"gateway/internal/middleware"
 	"gateway/internal/router"
@@ -50,7 +51,10 @@ func main() {
 	}
 	defer grpcClients.Close()
 
-	telegramService := service.NewTelegramService(grpcClients, cfg.Timeout)
+	kafkaProducer := kafka.NewProducer(cfg.KafkaBrokers)
+	defer kafkaProducer.Close()
+
+	telegramService := service.NewTelegramService(grpcClients, cfg.Timeout, kafkaProducer)
 	adminService := service.NewAdminService(
 		grpcClients,
 		adminConfig,

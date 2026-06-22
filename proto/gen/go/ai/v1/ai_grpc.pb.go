@@ -19,14 +19,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AIService_Chat_FullMethodName               = "/ai.v1.AIService/Chat"
-	AIService_GetChatHistory_FullMethodName     = "/ai.v1.AIService/GetChatHistory"
-	AIService_ClearChatHistory_FullMethodName   = "/ai.v1.AIService/ClearChatHistory"
-	AIService_ListChatSessions_FullMethodName   = "/ai.v1.AIService/ListChatSessions"
-	AIService_GetLLMConfig_FullMethodName       = "/ai.v1.AIService/GetLLMConfig"
-	AIService_GetSystemPrompt_FullMethodName    = "/ai.v1.AIService/GetSystemPrompt"
-	AIService_UpdateSystemPrompt_FullMethodName = "/ai.v1.AIService/UpdateSystemPrompt"
-	AIService_Health_FullMethodName             = "/ai.v1.AIService/Health"
+	AIService_Chat_FullMethodName                     = "/ai.v1.AIService/Chat"
+	AIService_AnalyzeProfile_FullMethodName           = "/ai.v1.AIService/AnalyzeProfile"
+	AIService_GetChatHistory_FullMethodName           = "/ai.v1.AIService/GetChatHistory"
+	AIService_ClearChatHistory_FullMethodName         = "/ai.v1.AIService/ClearChatHistory"
+	AIService_ListChatSessions_FullMethodName         = "/ai.v1.AIService/ListChatSessions"
+	AIService_GetProfileRoastHistory_FullMethodName   = "/ai.v1.AIService/GetProfileRoastHistory"
+	AIService_ClearProfileRoastHistory_FullMethodName = "/ai.v1.AIService/ClearProfileRoastHistory"
+	AIService_ListProfileRoastSessions_FullMethodName = "/ai.v1.AIService/ListProfileRoastSessions"
+	AIService_GetLLMConfig_FullMethodName             = "/ai.v1.AIService/GetLLMConfig"
+	AIService_GetSystemPrompt_FullMethodName          = "/ai.v1.AIService/GetSystemPrompt"
+	AIService_UpdateSystemPrompt_FullMethodName       = "/ai.v1.AIService/UpdateSystemPrompt"
+	AIService_Health_FullMethodName                   = "/ai.v1.AIService/Health"
 )
 
 // AIServiceClient is the client API for AIService service.
@@ -34,9 +38,13 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AIServiceClient interface {
 	Chat(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatResponse, error)
+	AnalyzeProfile(ctx context.Context, in *AnalyzeProfileRequest, opts ...grpc.CallOption) (*AnalyzeProfileResponse, error)
 	GetChatHistory(ctx context.Context, in *GetChatHistoryRequest, opts ...grpc.CallOption) (*GetChatHistoryResponse, error)
 	ClearChatHistory(ctx context.Context, in *ClearChatHistoryRequest, opts ...grpc.CallOption) (*ClearChatHistoryResponse, error)
 	ListChatSessions(ctx context.Context, in *ListChatSessionsRequest, opts ...grpc.CallOption) (*ListChatSessionsResponse, error)
+	GetProfileRoastHistory(ctx context.Context, in *GetProfileRoastHistoryRequest, opts ...grpc.CallOption) (*GetProfileRoastHistoryResponse, error)
+	ClearProfileRoastHistory(ctx context.Context, in *ClearProfileRoastHistoryRequest, opts ...grpc.CallOption) (*ClearProfileRoastHistoryResponse, error)
+	ListProfileRoastSessions(ctx context.Context, in *ListProfileRoastSessionsRequest, opts ...grpc.CallOption) (*ListProfileRoastSessionsResponse, error)
 	GetLLMConfig(ctx context.Context, in *GetLLMConfigRequest, opts ...grpc.CallOption) (*GetLLMConfigResponse, error)
 	GetSystemPrompt(ctx context.Context, in *GetSystemPromptRequest, opts ...grpc.CallOption) (*GetSystemPromptResponse, error)
 	UpdateSystemPrompt(ctx context.Context, in *UpdateSystemPromptRequest, opts ...grpc.CallOption) (*UpdateSystemPromptResponse, error)
@@ -55,6 +63,16 @@ func (c *aIServiceClient) Chat(ctx context.Context, in *ChatRequest, opts ...grp
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ChatResponse)
 	err := c.cc.Invoke(ctx, AIService_Chat_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aIServiceClient) AnalyzeProfile(ctx context.Context, in *AnalyzeProfileRequest, opts ...grpc.CallOption) (*AnalyzeProfileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AnalyzeProfileResponse)
+	err := c.cc.Invoke(ctx, AIService_AnalyzeProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +103,36 @@ func (c *aIServiceClient) ListChatSessions(ctx context.Context, in *ListChatSess
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListChatSessionsResponse)
 	err := c.cc.Invoke(ctx, AIService_ListChatSessions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aIServiceClient) GetProfileRoastHistory(ctx context.Context, in *GetProfileRoastHistoryRequest, opts ...grpc.CallOption) (*GetProfileRoastHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetProfileRoastHistoryResponse)
+	err := c.cc.Invoke(ctx, AIService_GetProfileRoastHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aIServiceClient) ClearProfileRoastHistory(ctx context.Context, in *ClearProfileRoastHistoryRequest, opts ...grpc.CallOption) (*ClearProfileRoastHistoryResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ClearProfileRoastHistoryResponse)
+	err := c.cc.Invoke(ctx, AIService_ClearProfileRoastHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *aIServiceClient) ListProfileRoastSessions(ctx context.Context, in *ListProfileRoastSessionsRequest, opts ...grpc.CallOption) (*ListProfileRoastSessionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListProfileRoastSessionsResponse)
+	err := c.cc.Invoke(ctx, AIService_ListProfileRoastSessions_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -136,9 +184,13 @@ func (c *aIServiceClient) Health(ctx context.Context, in *HealthRequest, opts ..
 // for forward compatibility.
 type AIServiceServer interface {
 	Chat(context.Context, *ChatRequest) (*ChatResponse, error)
+	AnalyzeProfile(context.Context, *AnalyzeProfileRequest) (*AnalyzeProfileResponse, error)
 	GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryResponse, error)
 	ClearChatHistory(context.Context, *ClearChatHistoryRequest) (*ClearChatHistoryResponse, error)
 	ListChatSessions(context.Context, *ListChatSessionsRequest) (*ListChatSessionsResponse, error)
+	GetProfileRoastHistory(context.Context, *GetProfileRoastHistoryRequest) (*GetProfileRoastHistoryResponse, error)
+	ClearProfileRoastHistory(context.Context, *ClearProfileRoastHistoryRequest) (*ClearProfileRoastHistoryResponse, error)
+	ListProfileRoastSessions(context.Context, *ListProfileRoastSessionsRequest) (*ListProfileRoastSessionsResponse, error)
 	GetLLMConfig(context.Context, *GetLLMConfigRequest) (*GetLLMConfigResponse, error)
 	GetSystemPrompt(context.Context, *GetSystemPromptRequest) (*GetSystemPromptResponse, error)
 	UpdateSystemPrompt(context.Context, *UpdateSystemPromptRequest) (*UpdateSystemPromptResponse, error)
@@ -156,6 +208,9 @@ type UnimplementedAIServiceServer struct{}
 func (UnimplementedAIServiceServer) Chat(context.Context, *ChatRequest) (*ChatResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Chat not implemented")
 }
+func (UnimplementedAIServiceServer) AnalyzeProfile(context.Context, *AnalyzeProfileRequest) (*AnalyzeProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AnalyzeProfile not implemented")
+}
 func (UnimplementedAIServiceServer) GetChatHistory(context.Context, *GetChatHistoryRequest) (*GetChatHistoryResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChatHistory not implemented")
 }
@@ -164,6 +219,15 @@ func (UnimplementedAIServiceServer) ClearChatHistory(context.Context, *ClearChat
 }
 func (UnimplementedAIServiceServer) ListChatSessions(context.Context, *ListChatSessionsRequest) (*ListChatSessionsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListChatSessions not implemented")
+}
+func (UnimplementedAIServiceServer) GetProfileRoastHistory(context.Context, *GetProfileRoastHistoryRequest) (*GetProfileRoastHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetProfileRoastHistory not implemented")
+}
+func (UnimplementedAIServiceServer) ClearProfileRoastHistory(context.Context, *ClearProfileRoastHistoryRequest) (*ClearProfileRoastHistoryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClearProfileRoastHistory not implemented")
+}
+func (UnimplementedAIServiceServer) ListProfileRoastSessions(context.Context, *ListProfileRoastSessionsRequest) (*ListProfileRoastSessionsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListProfileRoastSessions not implemented")
 }
 func (UnimplementedAIServiceServer) GetLLMConfig(context.Context, *GetLLMConfigRequest) (*GetLLMConfigResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetLLMConfig not implemented")
@@ -212,6 +276,24 @@ func _AIService_Chat_Handler(srv interface{}, ctx context.Context, dec func(inte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AIServiceServer).Chat(ctx, req.(*ChatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AIService_AnalyzeProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AnalyzeProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AIServiceServer).AnalyzeProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AIService_AnalyzeProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AIServiceServer).AnalyzeProfile(ctx, req.(*AnalyzeProfileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -266,6 +348,60 @@ func _AIService_ListChatSessions_Handler(srv interface{}, ctx context.Context, d
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AIServiceServer).ListChatSessions(ctx, req.(*ListChatSessionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AIService_GetProfileRoastHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetProfileRoastHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AIServiceServer).GetProfileRoastHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AIService_GetProfileRoastHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AIServiceServer).GetProfileRoastHistory(ctx, req.(*GetProfileRoastHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AIService_ClearProfileRoastHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClearProfileRoastHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AIServiceServer).ClearProfileRoastHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AIService_ClearProfileRoastHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AIServiceServer).ClearProfileRoastHistory(ctx, req.(*ClearProfileRoastHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AIService_ListProfileRoastSessions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListProfileRoastSessionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AIServiceServer).ListProfileRoastSessions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AIService_ListProfileRoastSessions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AIServiceServer).ListProfileRoastSessions(ctx, req.(*ListProfileRoastSessionsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -354,6 +490,10 @@ var AIService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AIService_Chat_Handler,
 		},
 		{
+			MethodName: "AnalyzeProfile",
+			Handler:    _AIService_AnalyzeProfile_Handler,
+		},
+		{
 			MethodName: "GetChatHistory",
 			Handler:    _AIService_GetChatHistory_Handler,
 		},
@@ -364,6 +504,18 @@ var AIService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListChatSessions",
 			Handler:    _AIService_ListChatSessions_Handler,
+		},
+		{
+			MethodName: "GetProfileRoastHistory",
+			Handler:    _AIService_GetProfileRoastHistory_Handler,
+		},
+		{
+			MethodName: "ClearProfileRoastHistory",
+			Handler:    _AIService_ClearProfileRoastHistory_Handler,
+		},
+		{
+			MethodName: "ListProfileRoastSessions",
+			Handler:    _AIService_ListProfileRoastSessions_Handler,
 		},
 		{
 			MethodName: "GetLLMConfig",

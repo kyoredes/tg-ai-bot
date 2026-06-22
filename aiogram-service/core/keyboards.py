@@ -8,6 +8,7 @@ def get_start_keyboard():
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="🤖 К нейросети", callback_data="neuro")],
+            [InlineKeyboardButton(text="🔮 Разбор профиля", callback_data="profile_roast")],
             [InlineKeyboardButton(text="🧐 О тарифе", callback_data="subscription")],
             [InlineKeyboardButton(text="👤Профиль", callback_data="profile")],
         ]

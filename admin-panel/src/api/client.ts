@@ -45,6 +45,7 @@ export interface AdminStats {
   users: { total: number; new7d: number };
   subscriptions: { total: number; active: number; expired: number };
   chat: { sessions: number };
+  profileRoasts: { sessions: number };
 }
 
 export interface ServiceStatus {
@@ -85,6 +86,23 @@ export interface ChatMessage {
 export interface ChatSession {
   telegramID: string;
   messageCount: number;
+}
+
+export interface ProfileRoastItem {
+  createdAt: number;
+  firstName: string;
+  lastName?: string;
+  username?: string;
+  bio?: string;
+  isPremium: boolean;
+  languageCode?: string;
+  hasPhoto: boolean;
+  response: string;
+}
+
+export interface ProfileRoastSession {
+  telegramID: string;
+  roastCount: number;
 }
 
 export interface LLMConfig {
@@ -163,6 +181,23 @@ export const api = {
 
   clearChatHistory: (telegramId: string) =>
     request<{ status: string }>(`/admin/chat/history/${telegramId}`, { method: 'DELETE' }),
+
+  listProfileRoastSessions: (page = 1, limit = 20) => {
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+    return request<{ sessions: ProfileRoastSession[]; total: number }>(
+      `/admin/profile-roasts/sessions?${params}`,
+    );
+  },
+
+  getProfileRoastHistory: (telegramId: string) =>
+    request<{ history: { telegramID: string; roasts: ProfileRoastItem[] } }>(
+      `/admin/profile-roasts/history/${telegramId}`,
+    ),
+
+  clearProfileRoastHistory: (telegramId: string) =>
+    request<{ status: string }>(`/admin/profile-roasts/history/${telegramId}`, {
+      method: 'DELETE',
+    }),
 
   getLLMConfig: () => request<{ config: LLMConfig }>('/admin/llm'),
 

@@ -21,3 +21,19 @@ class SubscriptionModel(BaseModel):
 class ChatModel(BaseModel):
     tg_id: str
     response: str
+
+
+class ProfileSnapshot(BaseModel):
+    first_name: str
+    last_name: str = ""
+    username: str = ""
+    bio: str = ""
+    is_premium: bool = False
+    language_code: str = ""
+    photo_base64: str | None = None
+    has_photo: bool = False
+
+
+class ProfileAnalyzeAcceptedModel(BaseModel):
+    job_id: str
+

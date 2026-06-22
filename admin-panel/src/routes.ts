@@ -5,5 +5,6 @@ export const routes = {
   user: (id: string) => `/admin/users/${id}`,
   subscriptions: '/admin/subscriptions',
   chat: '/admin/chat',
+  profileRoasts: '/admin/profile-roasts',
   llm: '/admin/llm',
 } as const;

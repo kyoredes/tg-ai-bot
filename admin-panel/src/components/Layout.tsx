@@ -7,6 +7,7 @@ const navItems = [
   { to: routes.users, label: 'Users' },
   { to: routes.subscriptions, label: 'Subscriptions' },
   { to: routes.chat, label: 'Chat History' },
+  { to: routes.profileRoasts, label: 'Profile Roasts' },
   { to: routes.llm, label: 'LLM Config' },
 ];
 

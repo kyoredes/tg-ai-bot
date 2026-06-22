@@ -39,6 +39,11 @@ class AIServiceStub:
                 request_serializer=ai_dot_v1_dot_ai__pb2.ChatRequest.SerializeToString,
                 response_deserializer=ai_dot_v1_dot_ai__pb2.ChatResponse.FromString,
                 _registered_method=True)
+        self.AnalyzeProfile = channel.unary_unary(
+                '/ai.v1.AIService/AnalyzeProfile',
+                request_serializer=ai_dot_v1_dot_ai__pb2.AnalyzeProfileRequest.SerializeToString,
+                response_deserializer=ai_dot_v1_dot_ai__pb2.AnalyzeProfileResponse.FromString,
+                _registered_method=True)
         self.GetChatHistory = channel.unary_unary(
                 '/ai.v1.AIService/GetChatHistory',
                 request_serializer=ai_dot_v1_dot_ai__pb2.GetChatHistoryRequest.SerializeToString,
@@ -53,6 +58,21 @@ class AIServiceStub:
                 '/ai.v1.AIService/ListChatSessions',
                 request_serializer=ai_dot_v1_dot_ai__pb2.ListChatSessionsRequest.SerializeToString,
                 response_deserializer=ai_dot_v1_dot_ai__pb2.ListChatSessionsResponse.FromString,
+                _registered_method=True)
+        self.GetProfileRoastHistory = channel.unary_unary(
+                '/ai.v1.AIService/GetProfileRoastHistory',
+                request_serializer=ai_dot_v1_dot_ai__pb2.GetProfileRoastHistoryRequest.SerializeToString,
+                response_deserializer=ai_dot_v1_dot_ai__pb2.GetProfileRoastHistoryResponse.FromString,
+                _registered_method=True)
+        self.ClearProfileRoastHistory = channel.unary_unary(
+                '/ai.v1.AIService/ClearProfileRoastHistory',
+                request_serializer=ai_dot_v1_dot_ai__pb2.ClearProfileRoastHistoryRequest.SerializeToString,
+                response_deserializer=ai_dot_v1_dot_ai__pb2.ClearProfileRoastHistoryResponse.FromString,
+                _registered_method=True)
+        self.ListProfileRoastSessions = channel.unary_unary(
+                '/ai.v1.AIService/ListProfileRoastSessions',
+                request_serializer=ai_dot_v1_dot_ai__pb2.ListProfileRoastSessionsRequest.SerializeToString,
+                response_deserializer=ai_dot_v1_dot_ai__pb2.ListProfileRoastSessionsResponse.FromString,
                 _registered_method=True)
         self.GetLLMConfig = channel.unary_unary(
                 '/ai.v1.AIService/GetLLMConfig',
@@ -85,6 +105,12 @@ class AIServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def AnalyzeProfile(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
     def GetChatHistory(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -98,6 +124,24 @@ class AIServiceServicer:
         raise NotImplementedError('Method not implemented!')
 
     def ListChatSessions(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetProfileRoastHistory(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ClearProfileRoastHistory(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListProfileRoastSessions(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -135,6 +179,11 @@ def add_AIServiceServicer_to_server(servicer, server):
                     request_deserializer=ai_dot_v1_dot_ai__pb2.ChatRequest.FromString,
                     response_serializer=ai_dot_v1_dot_ai__pb2.ChatResponse.SerializeToString,
             ),
+            'AnalyzeProfile': grpc.unary_unary_rpc_method_handler(
+                    servicer.AnalyzeProfile,
+                    request_deserializer=ai_dot_v1_dot_ai__pb2.AnalyzeProfileRequest.FromString,
+                    response_serializer=ai_dot_v1_dot_ai__pb2.AnalyzeProfileResponse.SerializeToString,
+            ),
             'GetChatHistory': grpc.unary_unary_rpc_method_handler(
                     servicer.GetChatHistory,
                     request_deserializer=ai_dot_v1_dot_ai__pb2.GetChatHistoryRequest.FromString,
@@ -149,6 +198,21 @@ def add_AIServiceServicer_to_server(servicer, server):
                     servicer.ListChatSessions,
                     request_deserializer=ai_dot_v1_dot_ai__pb2.ListChatSessionsRequest.FromString,
                     response_serializer=ai_dot_v1_dot_ai__pb2.ListChatSessionsResponse.SerializeToString,
+            ),
+            'GetProfileRoastHistory': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetProfileRoastHistory,
+                    request_deserializer=ai_dot_v1_dot_ai__pb2.GetProfileRoastHistoryRequest.FromString,
+                    response_serializer=ai_dot_v1_dot_ai__pb2.GetProfileRoastHistoryResponse.SerializeToString,
+            ),
+            'ClearProfileRoastHistory': grpc.unary_unary_rpc_method_handler(
+                    servicer.ClearProfileRoastHistory,
+                    request_deserializer=ai_dot_v1_dot_ai__pb2.ClearProfileRoastHistoryRequest.FromString,
+                    response_serializer=ai_dot_v1_dot_ai__pb2.ClearProfileRoastHistoryResponse.SerializeToString,
+            ),
+            'ListProfileRoastSessions': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListProfileRoastSessions,
+                    request_deserializer=ai_dot_v1_dot_ai__pb2.ListProfileRoastSessionsRequest.FromString,
+                    response_serializer=ai_dot_v1_dot_ai__pb2.ListProfileRoastSessionsResponse.SerializeToString,
             ),
             'GetLLMConfig': grpc.unary_unary_rpc_method_handler(
                     servicer.GetLLMConfig,
@@ -198,6 +262,33 @@ class AIService:
             '/ai.v1.AIService/Chat',
             ai_dot_v1_dot_ai__pb2.ChatRequest.SerializeToString,
             ai_dot_v1_dot_ai__pb2.ChatResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def AnalyzeProfile(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ai.v1.AIService/AnalyzeProfile',
+            ai_dot_v1_dot_ai__pb2.AnalyzeProfileRequest.SerializeToString,
+            ai_dot_v1_dot_ai__pb2.AnalyzeProfileResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -279,6 +370,87 @@ class AIService:
             '/ai.v1.AIService/ListChatSessions',
             ai_dot_v1_dot_ai__pb2.ListChatSessionsRequest.SerializeToString,
             ai_dot_v1_dot_ai__pb2.ListChatSessionsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetProfileRoastHistory(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ai.v1.AIService/GetProfileRoastHistory',
+            ai_dot_v1_dot_ai__pb2.GetProfileRoastHistoryRequest.SerializeToString,
+            ai_dot_v1_dot_ai__pb2.GetProfileRoastHistoryResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ClearProfileRoastHistory(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ai.v1.AIService/ClearProfileRoastHistory',
+            ai_dot_v1_dot_ai__pb2.ClearProfileRoastHistoryRequest.SerializeToString,
+            ai_dot_v1_dot_ai__pb2.ClearProfileRoastHistoryResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListProfileRoastSessions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/ai.v1.AIService/ListProfileRoastSessions',
+            ai_dot_v1_dot_ai__pb2.ListProfileRoastSessionsRequest.SerializeToString,
+            ai_dot_v1_dot_ai__pb2.ListProfileRoastSessionsResponse.FromString,
             options,
             channel_credentials,
             insecure,

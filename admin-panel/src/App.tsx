@@ -7,6 +7,7 @@ import { ChatHistoryPage } from './pages/ChatHistory';
 import { DashboardPage } from './pages/Dashboard';
 import { LLMConfigPage } from './pages/LLMConfig';
 import { LoginPage } from './pages/Login';
+import { ProfileRoastsPage } from './pages/ProfileRoasts';
 import { SubscriptionsPage } from './pages/Subscriptions';
 import { UserDetailPage } from './pages/UserDetail';
 import { UsersPage } from './pages/Users';
@@ -34,6 +35,7 @@ export function App() {
                 <Route path="users/:id" element={<UserDetailPage />} />
                 <Route path="subscriptions" element={<SubscriptionsPage />} />
                 <Route path="chat" element={<ChatHistoryPage />} />
+                <Route path="profile-roasts" element={<ProfileRoastsPage />} />
                 <Route path="llm" element={<LLMConfigPage />} />
               </Route>
             </Route>

@@ -1,6 +1,7 @@
 package config
 
 import (
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -11,15 +12,35 @@ type Config struct {
 	Port        string
 	LoggingMode string
 	Timeout     time.Duration
+	KafkaBrokers []string
 }
 
 func NewConfig() *Config {
 	return &Config{
-		Host:        viper.GetString("HOST"),
-		Port:        viper.GetString("PORT"),
-		LoggingMode: viper.GetString("LOGGING_MODE"),
-		Timeout:     viper.GetDuration("TIMEOUT"),
+		Host:         viper.GetString("HOST"),
+		Port:         viper.GetString("PORT"),
+		LoggingMode:  viper.GetString("LOGGING_MODE"),
+		Timeout:      viper.GetDuration("TIMEOUT"),
+		KafkaBrokers: parseKafkaBrokers(),
 	}
+}
+
+func parseKafkaBrokers() []string {
+	raw := viper.GetString("KAFKA_BROKERS")
+	if raw == "" {
+		return []string{"localhost:9092"}
+	}
+	parts := strings.Split(raw, ",")
+	brokers := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if broker := strings.TrimSpace(part); broker != "" {
+			brokers = append(brokers, broker)
+		}
+	}
+	if len(brokers) == 0 {
+		return []string{"localhost:9092"}
+	}
+	return brokers
 }
 
 type AuthConfig struct {
@@ -132,6 +153,8 @@ func Init() {
 
 	viper.SetDefault("AI_HOST", "localhost")
 	viper.SetDefault("AI_GRPC_PORT", "50053")
+
+	viper.SetDefault("KAFKA_BROKERS", "localhost:9092")
 
 	viper.SetDefault("COMMON_PUB_KEY", "secret")
 

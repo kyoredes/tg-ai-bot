@@ -39,6 +39,10 @@ export function DashboardPage() {
             <div className="stat-value">{data?.chat.sessions ?? 0}</div>
             <div className="stat-label">Chat Sessions</div>
           </div>
+          <div className="card">
+            <div className="stat-value">{data?.profileRoasts.sessions ?? 0}</div>
+            <div className="stat-label">Profile Roast Sessions</div>
+          </div>
         </div>
       )}
     </div>

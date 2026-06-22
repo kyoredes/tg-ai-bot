@@ -162,6 +162,35 @@ func (h *AdminHandler) ClearChatHistory(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+func (h *AdminHandler) ListProfileRoastSessions(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "20"))
+
+	sessions, err := h.adminService.ListProfileRoastSessions(page, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to list profile roast sessions"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "sessions": sessions.Sessions, "total": sessions.Total})
+}
+
+func (h *AdminHandler) GetProfileRoastHistory(c *gin.Context) {
+	history, err := h.adminService.GetProfileRoastHistory(c.Param("telegramId"))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get profile roast history"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "history": history})
+}
+
+func (h *AdminHandler) ClearProfileRoastHistory(c *gin.Context) {
+	if err := h.adminService.ClearProfileRoastHistory(c.Param("telegramId")); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to clear profile roast history"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
 func (h *AdminHandler) GetLLMConfig(c *gin.Context) {
 	config, err := h.adminService.GetLLMConfig()
 	if err != nil {

@@ -45,3 +45,11 @@ CHAT_ERROR_ANSWER = (
 
 CLEAR_CONTEXT_OK_ANSWER = "Контекст диалога очищен. Можешь начать новый разговор."
 CLEAR_CONTEXT_ERROR_ANSWER = "Не удалось очистить контекст. Попробуйте позже."
+
+PROFILE_ROAST_ERROR_ANSWER = (
+    "Не удалось разобрать профиль. Попробуйте позже."
+)
+
+PROFILE_ROAST_PROGRESS_ANSWER = (
+    "🔮 Разбор профиля начат, подождите..."
+)

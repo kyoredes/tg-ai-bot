@@ -144,6 +144,47 @@ func (h *TelegramHandler) Chat(c *gin.Context) {
 	})
 }
 
+const maxProfilePhotoBase64Len = 2 * 1024 * 1024
+
+func (h *TelegramHandler) AnalyzeProfile(c *gin.Context) {
+	logger := logging.Logger
+
+	var request dto.TelegramProfileAnalyzeDTO
+	if err := c.ShouldBindJSON(&request); err != nil {
+		logger.Debug("Wrong request", zap.Error(err))
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Wrong request",
+		})
+		return
+	}
+
+	if len(request.PhotoBase64) > maxProfilePhotoBase64Len {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "profile photo too large",
+		})
+		return
+	}
+
+	result, err := h.telegramService.EnqueueProfileAnalyze(&request)
+	if err != nil {
+		if errors.Is(err, exceptions.ErrUserNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "User not found",
+			})
+			return
+		}
+		logger.Error("Error enqueueing telegram profile analysis", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Error analyzing profile",
+		})
+		return
+	}
+	c.JSON(http.StatusAccepted, gin.H{
+		"status": "accepted",
+		"jobId":  result.JobID,
+	})
+}
+
 func (h *TelegramHandler) ClearChat(c *gin.Context) {
 	logger := logging.Logger
 

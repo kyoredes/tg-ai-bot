@@ -44,6 +44,33 @@ services:
       timeout: 5s
       retries: 10
 
+  redpanda:
+    image: redpandadata/redpanda:v24.2.4
+    container_name: agrobot-redpanda
+    restart: unless-stopped
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp
+      - "1"
+      - --memory
+      - 512M
+      - --reserve-memory
+      - 0M
+      - --node-id
+      - "0"
+      - --check=false
+      - --kafka-addr
+      - PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - PLAINTEXT://redpanda:9092
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   auth-service:
     build:
       context: ..
@@ -133,10 +160,16 @@ services:
       THROTTLE_CHAT_WINDOW: ${THROTTLE_CHAT_WINDOW:-60s}
       THROTTLE_LOGIN_LIMIT: ${THROTTLE_LOGIN_LIMIT:-10}
       THROTTLE_LOGIN_WINDOW: ${THROTTLE_LOGIN_WINDOW:-60s}
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-redpanda:9092}
     depends_on:
-      - auth-service
-      - subscription-service
-      - ai-service
+      auth-service:
+        condition: service_started
+      subscription-service:
+        condition: service_started
+      ai-service:
+        condition: service_started
+      redpanda:
+        condition: service_healthy
     ports:
       - "8000:8000"
 
@@ -157,6 +190,7 @@ services:
       REDIS_DB: 0
       REDIS_PASSWORD: ""
       LITELLM_MODEL: ${LITELLM_MODEL:-gpt-3.5-turbo}
+      LITELLM_PROFILE_MODEL: ${LITELLM_PROFILE_MODEL:-gpt-4o-mini}
       LITELLM_TEMPERATURE: ${LITELLM_TEMPERATURE:-0.2}
       LITELLM_MAX_TOKENS: ${LITELLM_MAX_TOKENS:-3000}
       LITELLM_REQUEST_TIMEOUT: ${LITELLM_REQUEST_TIMEOUT:-120}
@@ -170,8 +204,14 @@ services:
       THROTTLE_WINDOW_SECONDS: ${THROTTLE_WINDOW_SECONDS:-60}
       THROTTLE_CHAT_LIMIT: ${THROTTLE_CHAT_LIMIT:-10}
       THROTTLE_CHAT_WINDOW_SECONDS: ${THROTTLE_CHAT_WINDOW_SECONDS:-60}
+      THROTTLE_PROFILE_LIMIT: ${THROTTLE_PROFILE_LIMIT:-3}
+      THROTTLE_PROFILE_WINDOW_SECONDS: ${THROTTLE_PROFILE_WINDOW_SECONDS:-3600}
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-redpanda:9092}
+      KAFKA_GROUP_ID: ai-service-profile-worker
     depends_on:
       redis:
+        condition: service_healthy
+      redpanda:
         condition: service_healthy
     ports:
       - "50053:50053"
@@ -189,12 +229,17 @@ services:
       COMMON_PUB_KEY: ${COMMON_PUB_KEY:-secret}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       HTTP_TIMEOUT: ${HTTP_TIMEOUT:-120}
+      KAFKA_BROKERS: ${KAFKA_BROKERS:-redpanda:9092}
+      KAFKA_GROUP_ID: aiogram-profile-results
       THROTTLE_ENABLED: ${THROTTLE_ENABLED:-true}
       THROTTLE_LIMIT: ${THROTTLE_LIMIT:-5}
       THROTTLE_WINDOW: ${THROTTLE_WINDOW:-5}
       THROTTLE_BAN_SECONDS: ${THROTTLE_BAN_SECONDS:-100}
     depends_on:
-      - gateway-service
+      gateway-service:
+        condition: service_started
+      redpanda:
+        condition: service_healthy
 
   admin-panel:
     build:
