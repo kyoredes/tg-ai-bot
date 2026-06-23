@@ -2,7 +2,7 @@ import logging
 
 from config.prompts import LLM_FALLBACK_ERROR_MESSAGE, PROFILE_RATE_LIMIT_MESSAGE
 from config.throttle import throttle_settings
-from grpcserver.server import _profile_limiter, _save_profile_roast
+from llm.profile_persistence import profile_limiter, save_profile_roast
 from llm.errors import LLMUserFacingError
 from llm.profile_analyzer import ProfileAnalyzer, ProfileData
 from utils.response import is_invalid_llm_response
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 async def run_profile_analysis(telegram_id: str, profile: ProfileData) -> str:
-    if throttle_settings.ENABLED and not _profile_limiter.allow(f"profile:{telegram_id}"):
+    if throttle_settings.ENABLED and not profile_limiter.allow(f"profile:{telegram_id}"):
         return PROFILE_RATE_LIMIT_MESSAGE
 
     try:
@@ -35,5 +35,5 @@ async def run_profile_analysis(telegram_id: str, profile: ProfileData) -> str:
         )
         return LLM_FALLBACK_ERROR_MESSAGE
 
-    await _save_profile_roast(telegram_id, profile, response)
+    await save_profile_roast(telegram_id, profile, response)
     return response
