@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 
@@ -19,10 +20,10 @@ async def consume_profile_results(bot: Bot) -> None:
     while True:
         try:
             await _run_consumer(bot)
+        except asyncio.CancelledError:
+            raise
         except Exception:
             logger.exception("Profile result consumer crashed, restarting in 5s")
-            import asyncio
-
             await asyncio.sleep(5)
 
 

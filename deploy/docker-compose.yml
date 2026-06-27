@@ -65,6 +65,8 @@ services:
       - PLAINTEXT://0.0.0.0:9092
       - --advertise-kafka-addr
       - PLAINTEXT://redpanda:9092
+      - --set
+      - redpanda.kafka_batch_max_bytes=4194304
     healthcheck:
       test: ["CMD", "rpk", "cluster", "health"]
       interval: 5s
